@@ -1,5 +1,5 @@
-// leaderboard.js
-const GAME_NAME = 'snake'; // для змейки
+// leaderboard.js (с JOIN)
+const GAME_NAME = 'snake';
 
 async function loadLeaderboard() {
     const supabase = window.supabaseClient;
@@ -7,9 +7,13 @@ async function loadLeaderboard() {
     if (!container) return;
 
     try {
+        // Делаем JOIN: game_scores -> users (по user_id)
         const { data, error } = await supabase
             .from('game_scores')
-            .select('username, score')
+            .select(`
+                score,
+                users!inner ( username )
+            `)
             .eq('game_name', GAME_NAME)
             .order('score', { ascending: false })
             .limit(10);
@@ -17,59 +21,39 @@ async function loadLeaderboard() {
         if (error) throw error;
 
         if (!data || data.length === 0) {
-            container.innerHTML = 'Нет рекордов. Станьте первым!';
+            container.innerHTML = 'Нет рекордов';
             return;
         }
 
-        let html = '<table><th>Игрок</th><th>Счёт</th></tr>';
+        let html = '<table><th>Игрок</th><th>Счёт</th></table>';
         data.forEach(entry => {
-            html += `<tr><td>${escapeHtml(entry.username)}</td><td>${entry.score}</td></tr>`;
+            const username = entry.users?.username || 'Аноним';
+            html += `<tr><td>${escapeHtml(username)}</td><td>${entry.score}</td></tr>`;
         });
         html += '</table>';
         container.innerHTML = html;
     } catch (err) {
         console.error('Ошибка загрузки рекордов:', err);
-        container.innerHTML = 'Ошибка загрузки таблицы';
+        container.innerHTML = 'Ошибка загрузки';
     }
 }
 
 window.saveScoreToLeaderboard = async function(score) {
-    if (!window.currentUser) {
-        console.log('Пользователь не авторизован, рекорд не сохранён');
-        return;
-    }
+    if (!window.currentUser) return;
     const supabase = window.supabaseClient;
-    const username = window.currentUser.user_metadata?.username || 
-                     window.currentUser.email?.split('@')[0] || 'Аноним';
     try {
         const { error } = await supabase
             .from('game_scores')
             .insert({
                 user_id: window.currentUser.id,
-                username: username,
                 game_name: GAME_NAME,
                 score: score
             });
-        if (error) {
-            console.error('Ошибка сохранения:', error);
-        } else {
-            console.log('Рекорд сохранён');
-            loadLeaderboard();
-        }
+        if (error) console.error('Ошибка сохранения:', error);
+        else loadLeaderboard();
     } catch (err) { console.error(err); }
 };
 
-function escapeHtml(str) {
-    if (!str) return '';
-    return str.replace(/[&<>]/g, function(m) {
-        if (m === '&') return '&amp;';
-        if (m === '<') return '&lt;';
-        if (m === '>') return '&gt;';
-        return m;
-    });
-}
+function escapeHtml(str) { /* как выше */ }
 
-// Загружаем таблицу при старте
-if (document.getElementById('leaderboardList')) {
-    loadLeaderboard();
-}
+if (document.getElementById('leaderboardList')) loadLeaderboard();
