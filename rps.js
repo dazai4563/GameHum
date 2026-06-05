@@ -41,20 +41,24 @@ function getChoiceEmoji(choice) {
     }
 }
 
-function endGame(winner) {
+// rps.js – дополнения
+async function endGame(winner) {
     gameActive = false;
     choiceBtns.forEach(btn => btn.disabled = true);
     if (winner === 'player') {
-        resultDiv.innerHTML = '<span style="color:green;">🎉 Вы выиграли матч! 🎉</span>';
-        // Сохраняем рекорд (3 победы)
+        resultDiv.innerHTML = '<span style="color:green;">🎉 Вы выиграли матч! +10 XP 🎉</span>';
+        await addXP(10);   // из xp.js
+        // (опционально) сохраняем рекорд (3 очка) в таблицу лидеров, если нужно
         if (window.currentUser && typeof saveScoreToLeaderboard === 'function') {
             saveScoreToLeaderboard(3);
         } else {
             resultDiv.innerHTML += '<br><span style="color:orange;">Войдите, чтобы сохранить результат в таблицу лидеров</span>';
         }
     } else {
-        resultDiv.innerHTML = '<span style="color:red;">😢 Компьютер выиграл матч. Попробуйте ещё!</span>';
+        resultDiv.innerHTML = '<span style="color:red;">😢 Компьютер выиграл матч. -5 XP</span>';
+        await subtractXP(5);
     }
+    await displayXP(); // обновить отображение
 }
 
 function resetGame() {

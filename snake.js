@@ -1,4 +1,5 @@
-// snake.js – упрощённая змейка для проверки
+// snake.js – игра Змейка с XP и рекордами
+
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 const scoreSpan = document.getElementById('score');
@@ -16,6 +17,20 @@ let score = 0;
 let gameOver = false;
 let gameInterval = null;
 
+// === Функция начисления XP (без ожидания, fire-and-forget) ===
+function giveXPForScore(scoreValue) {
+    if (scoreValue <= 0) return;
+    const xpGain = Math.min(scoreValue, 50); // не более 50 XP за партию
+    if (typeof addXP === 'function') {
+        addXP(xpGain).catch(console.error);
+        // Необязательное уведомление (можно раскомментировать)
+        // console.log(`+${xpGain} XP`);
+    } else {
+        console.warn('addXP не определена, проверьте подключение xp.js');
+    }
+}
+
+// === Игровые функции ===
 function getRandomFreeCell() {
     const freeCells = [];
     for (let i = 0; i < gridSize; i++) {
@@ -39,16 +54,20 @@ function updateGame() {
         case 'UP': newHead.y--; break;
         case 'DOWN': newHead.y++; break;
     }
+
+    // Столкновение со стеной
     if (newHead.x < 0 || newHead.x >= gridSize || newHead.y < 0 || newHead.y >= gridSize) {
         gameOver = true;
         clearInterval(gameInterval);
-        alert('Game Over');
+        giveXPForScore(score);
         if (window.currentUser && score > 0 && typeof saveScoreToLeaderboard === 'function') {
             saveScoreToLeaderboard(score);
         }
+        alert('Game Over');
         drawGame();
         return;
     }
+
     const ate = (newHead.x === food.x && newHead.y === food.y);
     snake.unshift(newHead);
     if (!ate) snake.pop();
@@ -59,22 +78,26 @@ function updateGame() {
         if (!newFood) {
             gameOver = true;
             clearInterval(gameInterval);
-            alert('You win!');
+            giveXPForScore(score);
             if (window.currentUser && typeof saveScoreToLeaderboard === 'function') {
                 saveScoreToLeaderboard(score);
             }
+            alert('You win! Полное поле!');
             drawGame();
             return;
         }
         food = newFood;
     }
+
+    // Самопересечение
     if (snake.slice(1).some(s => s.x === snake[0].x && s.y === snake[0].y)) {
         gameOver = true;
         clearInterval(gameInterval);
-        alert('Game Over');
+        giveXPForScore(score);
         if (window.currentUser && score > 0 && typeof saveScoreToLeaderboard === 'function') {
             saveScoreToLeaderboard(score);
         }
+        alert('Game Over');
         drawGame();
     }
     drawGame();
@@ -96,6 +119,7 @@ function drawGame() {
     }
 }
 
+// === Управление ===
 window.addEventListener('keydown', (e) => {
     if (gameOver) return;
     const key = e.key;
@@ -106,6 +130,7 @@ window.addEventListener('keydown', (e) => {
     e.preventDefault();
 });
 
+// === Перезапуск ===
 function startGame() {
     if (gameInterval) clearInterval(gameInterval);
     snake = [{x: 10, y: 10}];
