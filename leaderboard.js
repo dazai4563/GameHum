@@ -6,7 +6,7 @@ async function loadLeaderboard() {
 
     try {
         const { data, error } = await supabase
-            .from('game_scores')
+                .from('game_scores')
             .select('username, score')
             .order('score', { ascending: false })
             .limit(10);
