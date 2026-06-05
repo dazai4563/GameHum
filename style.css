@@ -1,127 +1,265 @@
+/* ===== ОБЩИЕ СТИЛИ ===== */
+* {
+    box-sizing: border-box;
+}
+
 body {
     background: #1e1e2f;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     display: flex;
     justify-content: center;
     align-items: center;
     min-height: 100vh;
-    font-family: Arial, sans-serif;
     margin: 0;
     padding: 20px;
 }
 
 .container {
     background: #2a2a3a;
+    border-radius: 20px;
     padding: 30px;
-    border-radius: 16px;
-    width: 300px;
+    width: 100%;
+    max-width: 800px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
     text-align: center;
-    box-shadow: 0 0 20px rgba(0,0,0,0.5);
 }
 
-.container h1 {
+h1 {
     color: white;
+    margin-bottom: 20px;
+    font-size: 2rem;
+}
+
+/* ===== МЕНЮ ИГР ===== */
+.user-status {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 15px;
+    background: #1e1e2a;
+    padding: 8px 15px;
+    border-radius: 30px;
+    margin-bottom: 30px;
+    color: #ccc;
+}
+
+.user-status span, .user-status a, .user-status button {
+    font-size: 14px;
+}
+
+.user-status a {
+    color: #4c9aff;
+    text-decoration: none;
+}
+
+.user-status a:hover {
+    text-decoration: underline;
+}
+
+.game-menu {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.game-card {
+    background: #1e1e2a;
+    border-radius: 16px;
+    padding: 20px;
+    width: 220px;
+    transition: transform 0.2s, box-shadow 0.2s;
+    text-align: center;
+}
+
+.game-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.4);
+}
+
+.game-card h2 {
+    color: #ffd966;
+    margin: 0 0 10px;
+}
+
+.game-card p {
+    color: #bbb;
+    font-size: 14px;
     margin-bottom: 20px;
 }
 
+.btn {
+    display: inline-block;
+    background: #4c9aff;
+    color: white;
+    padding: 8px 20px;
+    border-radius: 30px;
+    text-decoration: none;
+    font-weight: bold;
+    transition: background 0.2s;
+}
+
+.btn:hover {
+    background: #2a7fcc;
+}
+
+/* ===== СТРАНИЦА ВХОДА/РЕГИСТРАЦИИ ===== */
 .auth-form {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 15px;
+    margin: 20px 0;
 }
 
 .auth-form input {
-    padding: 10px;
+    padding: 12px;
     border: none;
-    border-radius: 5px;
+    border-radius: 30px;
     font-size: 16px;
+    background: #1e1e2a;
+    color: white;
+    outline: none;
+    text-align: center;
+}
+
+.auth-form input:focus {
+    background: #2a2a3a;
+    box-shadow: 0 0 0 2px #4c9aff;
 }
 
 .auth-form button {
-    padding: 10px;
+    padding: 12px;
     border: none;
-    border-radius: 5px;
-    background: #4a4a5a;
-    color: white;
-    cursor: pointer;
+    border-radius: 30px;
     font-size: 16px;
+    cursor: pointer;
+    background: #4c9aff;
+    color: white;
+    font-weight: bold;
     transition: 0.2s;
 }
 
 .auth-form button:hover {
-    background: #6a6a7a;
+    background: #2a7fcc;
 }
 
 #message {
     margin-top: 15px;
     font-size: 14px;
+    min-height: 40px;
 }
 
+/* ===== СТРАНИЦА ИГРЫ ===== */
 .game-container {
+    background: #2a2a3a;
+    border-radius: 20px;
+    padding: 20px;
     text-align: center;
+    max-width: 500px;
+    width: 100%;
+}
+
+.game-header {
     display: flex;
-    flex-direction: column;
+    justify-content: space-between;
     align-items: center;
-    gap: 15px;
+    margin-bottom: 20px;
+    background: #1e1e2a;
+    padding: 8px 15px;
+    border-radius: 30px;
+}
+
+.user-info {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.back-link {
+    color: #ffaa66;
+    text-decoration: none;
+    font-size: 14px;
+}
+
+.back-link:hover {
+    text-decoration: underline;
 }
 
 canvas {
     background: #000;
-    border: 2px solid white;
-    box-shadow: 0 0 10px rgba(0,0,0,0.5);
+    border: 3px solid #ffd966;
+    border-radius: 10px;
+    margin: 10px 0;
 }
 
 .info {
-    color: white;
-    font-size: 20px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 30px;
-    background: #2a2a3a;
+    gap: 20px;
+    background: #1e1e2a;
     padding: 10px 20px;
-    border-radius: 8px;
-    flex-wrap: wrap;
+    border-radius: 40px;
+    color: white;
+    font-weight: bold;
+    margin: 15px 0;
+}
+
+.info span {
+    font-size: 18px;
 }
 
 button {
-    padding: 8px 16px;
-    font-size: 16px;
-    cursor: pointer;
-    background: #4a4a5a;
-    color: white;
+    background: #4c9aff;
     border: none;
-    border-radius: 5px;
+    color: white;
+    padding: 8px 20px;
+    border-radius: 30px;
+    cursor: pointer;
+    font-weight: bold;
     transition: 0.2s;
 }
 
 button:hover {
-    background: #6a6a7a;
+    background: #2a7fcc;
 }
 
 .leaderboard {
-    background: #111;
-    color: white;
-    padding: 10px 20px;
-    border-radius: 8px;
-    width: 280px;
-    text-align: center;
-    margin-top: 10px;
+    background: #1e1e2a;
+    border-radius: 16px;
+    padding: 10px;
+    margin-top: 20px;
 }
 
 .leaderboard h3 {
-    margin: 0 0 10px 0;
+    color: #ffd966;
+    margin: 0 0 10px;
+    font-size: 18px;
 }
 
 .leaderboard table {
     width: 100%;
     border-collapse: collapse;
+    color: white;
+    font-size: 14px;
 }
 
 .leaderboard th, .leaderboard td {
-    padding: 5px;
-    border-bottom: 1px solid #333;
+    padding: 6px;
+    border-bottom: 1px solid #444;
 }
 
 .leaderboard th {
-    background: #222;
+    background: #2a2a3a;
+    color: #ffd966;
+}
+
+/* ===== КНОПКА ВЫХОДА ===== */
+#logoutBtn {
+    background: #cc5555;
+}
+
+#logoutBtn:hover {
+    background: #aa3333;
 }
