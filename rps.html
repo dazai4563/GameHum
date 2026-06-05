@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Камень, ножницы, бумага</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="game-container">
+    <div class="game-header">
+        <div class="user-info">
+            <span id="currentUser"></span>
+            <button id="logoutBtn" style="display: none;">Выйти</button>
+            <a href="login.html?redirect=rps.html" id="loginLink">Войти (для рекордов)</a>
+        </div>
+        <a href="index.html" class="back-link">← Меню</a>
+    </div>
+
+    <h2>✊ Камень, ножницы, бумага ✋</h2>
+
+    <div class="choice-buttons">
+        <button id="rock" class="choice">✊ Камень</button>
+        <button id="scissors" class="choice">✌️ Ножницы</button>
+        <button id="paper" class="choice">✋ Бумага</button>
+    </div>
+
+    <div class="scores">
+        <div>Игрок: <span id="playerScore">0</span></div>
+        <div>Компьютер: <span id="computerScore">0</span></div>
+    </div>
+
+    <div id="result" class="result-message"></div>
+    <button id="resetGameBtn" class="reset-btn">🔄 Новая игра</button>
+
+    <div class="leaderboard">
+        <h3>🏆 Таблица лидеров (Камень-ножницы-бумага)</h3>
+        <div id="leaderboardList">Загрузка...</div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
+<script src="common.js"></script>
+<script>
+    // Определяем имя игры для таблицы лидеров
+    window.GAME_NAME = 'rps';
+</script>
+<script src="leaderboard.js"></script>
+<script src="rps.js"></script>
+</body>
+</html>

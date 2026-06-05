@@ -263,3 +263,58 @@ button:hover {
 #logoutBtn:hover {
     background: #aa3333;
 }
+/* Стили для игры "Камень, ножницы, бумага" */
+.choice-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin: 20px 0;
+}
+
+.choice {
+    background: #4c9aff;
+    border: none;
+    color: white;
+    font-size: 24px;
+    padding: 12px 20px;
+    border-radius: 40px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.choice:hover {
+    background: #2a7fcc;
+    transform: scale(1.05);
+}
+
+.choice:disabled {
+    background: #666;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.scores {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    font-size: 28px;
+    font-weight: bold;
+    margin: 20px 0;
+}
+
+.result-message {
+    background: #1e1e2a;
+    padding: 12px;
+    border-radius: 30px;
+    font-size: 18px;
+    margin: 15px 0;
+}
+
+.reset-btn {
+    background: #ffaa66;
+    margin: 10px 0;
+}
+
+.reset-btn:hover {
+    background: #e08844;
+}
