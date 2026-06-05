@@ -1,5 +1,4 @@
-// auth.js – регистрация и вход (без глобального объявления supabase)
-
+// auth.js – использует домен snakegame.com
 document.addEventListener('DOMContentLoaded', () => {
     const usernameInput = document.getElementById('username');
     const passwordInput = document.getElementById('password');
@@ -8,7 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const messageDiv = document.getElementById('message');
 
     if (!usernameInput || !passwordInput || !loginBtn || !registerBtn) {
-        console.error('Один из элементов формы не найден! Проверьте id в index.html');
+        console.error('Элементы формы не найдены');
         return;
     }
 
@@ -17,9 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const username = usernameInput.value.trim();
         const password = passwordInput.value;
 
-        messageDiv.style.color = 'black';
         messageDiv.textContent = '';
-
         if (!username) {
             messageDiv.style.color = 'red';
             messageDiv.textContent = 'Введите игровое имя';
@@ -32,13 +29,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const safeUsername = username.replace(/[^a-zA-Z0-9_-]/g, '_');
-        const email = `${safeUsername}@snakegame.local`;
+        const email = `${safeUsername}@snakegame.com`; // ← изменено с .local на .com
 
         messageDiv.style.color = 'blue';
         messageDiv.textContent = 'Регистрация...';
 
         try {
-            // Используем глобальный клиент
             const { error } = await window.supabaseClient.auth.signUp({
                 email: email,
                 password: password,
@@ -69,9 +65,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const username = usernameInput.value.trim();
         const password = passwordInput.value;
 
-        messageDiv.style.color = 'black';
-        messageDiv.textContent = '';
-
         if (!username || !password) {
             messageDiv.style.color = 'red';
             messageDiv.textContent = 'Заполните имя и пароль';
@@ -79,7 +72,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const safeUsername = username.replace(/[^a-zA-Z0-9_-]/g, '_');
-        const email = `${safeUsername}@snakegame.local`;
+        const email = `${safeUsername}@snakegame.com`; // ← тоже изменено
 
         messageDiv.style.color = 'blue';
         messageDiv.textContent = 'Вход...';
@@ -98,7 +91,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 window.location.href = 'game.html';
             }, 1000);
         } catch (err) {
-            console.error(err);
             messageDiv.style.color = 'red';
             messageDiv.textContent = 'Неверное имя или пароль';
         }
