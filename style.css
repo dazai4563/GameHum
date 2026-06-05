@@ -9,6 +9,53 @@ body {
     padding: 20px;
 }
 
+.container {
+    background: #2a2a3a;
+    padding: 30px;
+    border-radius: 16px;
+    width: 300px;
+    text-align: center;
+    box-shadow: 0 0 20px rgba(0,0,0,0.5);
+}
+
+.container h1 {
+    color: white;
+    margin-bottom: 20px;
+}
+
+.auth-form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.auth-form input {
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+}
+
+.auth-form button {
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    background: #4a4a5a;
+    color: white;
+    cursor: pointer;
+    font-size: 16px;
+    transition: 0.2s;
+}
+
+.auth-form button:hover {
+    background: #6a6a7a;
+}
+
+#message {
+    margin-top: 15px;
+    font-size: 14px;
+}
+
 .game-container {
     text-align: center;
     display: flex;
@@ -33,6 +80,7 @@ canvas {
     background: #2a2a3a;
     padding: 10px 20px;
     border-radius: 8px;
+    flex-wrap: wrap;
 }
 
 button {
