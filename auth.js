@@ -1,9 +1,5 @@
-// auth.js – регистрация и вход по игровому имени (username)
+// auth.js – регистрация и вход (без глобального объявления supabase)
 
-// Получаем глобальный клиент Supabase из config.js
-const supabase = window.supabaseClient;
-
-// Дожидаемся загрузки DOM
 document.addEventListener('DOMContentLoaded', () => {
     const usernameInput = document.getElementById('username');
     const passwordInput = document.getElementById('password');
@@ -16,16 +12,14 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
     }
 
-    // ---- Регистрация ----
+    // Регистрация
     registerBtn.addEventListener('click', async () => {
         const username = usernameInput.value.trim();
         const password = passwordInput.value;
 
-        // Сброс сообщения
         messageDiv.style.color = 'black';
         messageDiv.textContent = '';
 
-        // Валидация
         if (!username) {
             messageDiv.style.color = 'red';
             messageDiv.textContent = 'Введите игровое имя';
@@ -37,7 +31,6 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        // Генерируем email из username (латиница, цифры, дефис, подчёркивание)
         const safeUsername = username.replace(/[^a-zA-Z0-9_-]/g, '_');
         const email = `${safeUsername}@snakegame.local`;
 
@@ -45,14 +38,12 @@ document.addEventListener('DOMContentLoaded', () => {
         messageDiv.textContent = 'Регистрация...';
 
         try {
-            // Регистрируем пользователя, передавая username в метаданные
-            const { data, error } = await supabase.auth.signUp({
+            // Используем глобальный клиент
+            const { error } = await window.supabaseClient.auth.signUp({
                 email: email,
                 password: password,
                 options: {
-                    data: {
-                        username: username   // ← ключ ДОЛЖЕН быть 'username'
-                    }
+                    data: { username: username }
                 }
             });
 
@@ -60,13 +51,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
             messageDiv.style.color = 'green';
             messageDiv.textContent = 'Регистрация успешна! Теперь войдите.';
-            // Очищаем поля
             usernameInput.value = '';
             passwordInput.value = '';
         } catch (err) {
-            console.error('Ошибка регистрации:', err);
+            console.error(err);
             messageDiv.style.color = 'red';
-            // Обработка конфликта имён (если email уже существует)
             if (err.message.includes('already registered')) {
                 messageDiv.textContent = 'Это имя уже занято, выберите другое.';
             } else {
@@ -75,7 +64,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // ---- Вход ----
+    // Вход
     loginBtn.addEventListener('click', async () => {
         const username = usernameInput.value.trim();
         const password = passwordInput.value;
@@ -89,7 +78,6 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        // Генерируем email так же, как при регистрации
         const safeUsername = username.replace(/[^a-zA-Z0-9_-]/g, '_');
         const email = `${safeUsername}@snakegame.local`;
 
@@ -97,7 +85,7 @@ document.addEventListener('DOMContentLoaded', () => {
         messageDiv.textContent = 'Вход...';
 
         try {
-            const { error } = await supabase.auth.signInWithPassword({
+            const { error } = await window.supabaseClient.auth.signInWithPassword({
                 email: email,
                 password: password
             });
@@ -110,7 +98,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 window.location.href = 'game.html';
             }, 1000);
         } catch (err) {
-            console.error('Ошибка входа:', err);
+            console.error(err);
             messageDiv.style.color = 'red';
             messageDiv.textContent = 'Неверное имя или пароль';
         }
