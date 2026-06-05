@@ -21,8 +21,9 @@ let highScore = localStorage.getItem('snakeHighScore') || 0;
 highScoreSpan.textContent = highScore;
 
 // ========== РАБОТА С SUPABASE И АВТОРИЗАЦИЯ ==========
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+const supabase = window.supabaseClient;
 let currentUser = null;
+
 
 // Проверяем, авторизован ли пользователь
 (async () => {

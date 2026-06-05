@@ -1,5 +1,5 @@
-// auth.js - используется только на странице index.html
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+// auth.js - используем готовый клиент из window
+const supabase = window.supabaseClient; // просто ссылка на существующий клиент
 
 document.getElementById('login-btn').addEventListener('click', async () => {
     const email = document.getElementById('email').value;

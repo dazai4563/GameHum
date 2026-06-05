@@ -1,11 +1,10 @@
-// leaderboard.js - загружает топ-10 рекордов из таблицы game_scores
+// leaderboard.js
 async function loadLeaderboard() {
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+    const supabase = window.supabaseClient;   // <-- используем глобальный клиент
     const container = document.getElementById('leaderboardList');
     if (!container) return;
 
     try {
-        // Делаем запрос с JOIN на auth.users, чтобы получить email
         const { data, error } = await supabase
             .from('game_scores')
             .select(`
@@ -28,7 +27,6 @@ async function loadLeaderboard() {
 
         let html = '<table><th>Игрок</th><th>Счёт</th></tr>';
         data.forEach(entry => {
-            // В данных users может быть массив, берем первый элемент
             const email = entry.users && entry.users.email ? entry.users.email : 'Аноним';
             html += `<tr><td>${escapeHtml(email)}</td><td>${entry.score}</td></tr>`;
         });
@@ -50,7 +48,6 @@ function escapeHtml(str) {
     });
 }
 
-// Загружаем таблицу при старте
 if (document.getElementById('leaderboardList')) {
     loadLeaderboard();
 }
