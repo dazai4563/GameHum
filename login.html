@@ -1,1 +1,24 @@
-{\rtf1}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Вход / Регистрация</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>🐍 Вход в платформу</h1>
+        <div class="auth-form">
+            <input type="text" id="username" placeholder="Игровое имя" required>
+            <input type="password" id="password" placeholder="Пароль (минимум 6 символов)" required>
+            <button id="login-btn">Войти</button>
+            <button id="register-btn">Зарегистрироваться</button>
+            <div id="message"></div>
+        </div>
+        <a href="index.html">← На главную</a>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="config.js"></script>
+    <script src="auth.js"></script>
+</body>
+</html>

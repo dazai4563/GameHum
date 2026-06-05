@@ -1,5 +1,4 @@
-// config.js - здесь хранятся все ключи и адреса
-// Замените на свои реальные данные из Supabase
+//здесь хранятся все ключи и адреса
 
 const SUPABASE_URL = 'https://ryygwvivzojsnvuzaxpp.supabase.co';
 const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_vJivT1c9MiiFvPZxB7A3sw_XLhKSj8x';

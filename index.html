@@ -2,23 +2,42 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Вход в игру Змейка</title>
+    <title>Игровая платформа</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="container">
-        <h1>🐍 Змейка</h1>
-        <div class="auth-form">
-            <input type="text" id="username" placeholder="Игровое имя" required>
-            <input type="password" id="password" placeholder="Пароль (минимум 6 символов)" required>
-            <button id="login-btn">Войти</button>
-            <button id="register-btn">Зарегистрироваться</button>
-            <div id="message"></div>
+        <h1>🎮 Игровая платформа</h1>
+        <div class="user-status">
+            <span id="currentUser"></span>
+            <button id="logoutBtn" style="display: none;">Выйти</button>
+            <a href="login.html?redirect=index.html" id="loginLink">Войти</a>
+        </div>
+        <div class="game-menu">
+            <div class="game-card">
+                <h2>🐍 Змейка</h2>
+                <p>Классическая игра. Управляй стрелками.</p>
+                <a href="snake.html" class="btn">Играть</a>
+            </div>
+            <!-- здесь можно добавить другие игры -->
         </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="config.js"></script>
-    <script src="auth.js"></script>
+    <script src="common.js"></script>
+    <script>
+        // Показываем кнопку выхода, если пользователь залогинен
+        document.addEventListener('DOMContentLoaded', () => {
+            const logoutBtn = document.getElementById('logoutBtn');
+            const loginLink = document.getElementById('loginLink');
+            if (window.currentUser) {
+                logoutBtn.style.display = 'inline-block';
+                loginLink.style.display = 'none';
+            } else {
+                logoutBtn.style.display = 'none';
+                loginLink.style.display = 'inline-block';
+            }
+        });
+    </script>
 </body>
 </html>

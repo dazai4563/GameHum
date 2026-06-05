@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Змейка</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="game-container">
+        <div class="game-header">
+            <div class="user-info">
+                <span id="currentUser"></span>
+                <button id="logoutBtn" style="display: none;">Выйти</button>
+                <a href="login.html?redirect=snake.html" id="loginLink">Войти (для сохранения рекордов)</a>
+            </div>
+            <a href="index.html" class="back-link">← Меню</a>
+        </div>
+        <canvas id="gameCanvas" width="400" height="400"></canvas>
+        <div class="info">
+            <span>Счёт: <span id="score">0</span></span>
+            <span>Рекорд: <span id="highScore">0</span></span>
+            <button id="restartBtn">🔄 Новая игра</button>
+        </div>
+        <div class="leaderboard">
+            <h3>🏆 Таблица лидеров (Змейка)</h3>
+            <div id="leaderboardList">Загрузка...</div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="config.js"></script>
+    <script src="common.js"></script>
+    <script src="leaderboard.js"></script>
+    <script src="snake.js"></script>
+    <script>
+        // Обновляем интерфейс после загрузки common.js
+        document.addEventListener('DOMContentLoaded', () => {
+            const logoutBtn = document.getElementById('logoutBtn');
+            const loginLink = document.getElementById('loginLink');
+            if (window.currentUser) {
+                logoutBtn.style.display = 'inline-block';
+                loginLink.style.display = 'none';
+            } else {
+                logoutBtn.style.display = 'none';
+                loginLink.style.display = 'inline-block';
+            }
+        });
+    </script>
+</body>
+</html>
