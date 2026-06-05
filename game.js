@@ -1,24 +1,14 @@
-// game.js – полный код игры «Змейка»
-// ----- Элементы DOM -----
+// game.js - вся логика змейки: движение, еда, счёт, рекорд, пауза
+
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 const scoreSpan = document.getElementById('score');
+const highScoreSpan = document.getElementById('highScore');
 const restartBtn = document.getElementById('restartBtn');
 
-// Добавим отображение лучшего счёта (создадим элемент, если его нет)
-let highScoreSpan = document.getElementById('highScore');
-if (!highScoreSpan) {
-    const infoDiv = document.querySelector('.info');
-    highScoreSpan = document.createElement('span');
-    highScoreSpan.id = 'highScore';
-    highScoreSpan.textContent = '0';
-    infoDiv.appendChild(document.createTextNode(' | Рекорд: '));
-    infoDiv.appendChild(highScoreSpan);
-}
+const gridSize = 20;
+const cellSize = canvas.width / gridSize;
 
-// ----- Параметры игры -----
-const gridSize = 20;          // 20x20 клеток
-const cellSize = canvas.width / gridSize; // 20px
 let snake = [{x: 10, y: 10}];
 let direction = 'RIGHT';
 let nextDirection = 'RIGHT';
@@ -28,10 +18,9 @@ let gameOver = false;
 let paused = false;
 let gameInterval = null;
 let highScore = localStorage.getItem('snakeHighScore') || 0;
+
 highScoreSpan.textContent = highScore;
 
-// ----- Вспомогательные функции -----
-// Случайная свободная клетка
 function getRandomFreeCell() {
     const freeCells = [];
     for (let i = 0; i < gridSize; i++) {
@@ -41,12 +30,10 @@ function getRandomFreeCell() {
             }
         }
     }
-    if (freeCells.length === 0) return null; // победа (всё поле заполнено)
-    const rand = Math.floor(Math.random() * freeCells.length);
-    return freeCells[rand];
+    if (freeCells.length === 0) return null;
+    return freeCells[Math.floor(Math.random() * freeCells.length)];
 }
 
-// Обновление рекорда
 function updateHighScore() {
     if (score > highScore) {
         highScore = score;
@@ -55,33 +42,31 @@ function updateHighScore() {
     }
 }
 
-// ----- Игровая логика -----
 function updateGame() {
     if (gameOver || paused) return;
 
     direction = nextDirection;
+    const newHead = {...snake[0]};
 
-    // Новая голова
-    let newHead = {...snake[0]};
     switch (direction) {
         case 'RIGHT': newHead.x++; break;
-        case 'LEFT':  newHead.x--; break;
-        case 'UP':    newHead.y--; break;
-        case 'DOWN':  newHead.y++; break;
-        default: break;
+        case 'LEFT': newHead.x--; break;
+        case 'UP': newHead.y--; break;
+        case 'DOWN': newHead.y++; break;
     }
 
-    // Проверка стен
+    // Столкновение со стеной
     if (newHead.x < 0 || newHead.x >= gridSize || newHead.y < 0 || newHead.y >= gridSize) {
         gameOver = true;
         clearInterval(gameInterval);
         alert('Игра окончена! Нажмите "Новая игра"');
-        drawGame(); // перерисуем с сообщением Game Over
+        drawGame();
+        // Вызываем функцию сохранения, если она существует (из leaderboard.js)
+        if (typeof saveScoreToLeaderboard === 'function') saveScoreToLeaderboard(score);
         return;
     }
 
     const ateFood = (newHead.x === food.x && newHead.y === food.y);
-
     snake.unshift(newHead);
     if (!ateFood) {
         snake.pop();
@@ -95,6 +80,7 @@ function updateGame() {
             clearInterval(gameInterval);
             alert('Поздравляем! Вы заполнили всё поле! Победа!');
             drawGame();
+            if (typeof saveScoreToLeaderboard === 'function') saveScoreToLeaderboard(score);
             return;
         }
         food = newFood;
@@ -107,16 +93,13 @@ function updateGame() {
         clearInterval(gameInterval);
         alert('Игра окончена! Нажмите "Новая игра"');
         drawGame();
+        if (typeof saveScoreToLeaderboard === 'function') saveScoreToLeaderboard(score);
     }
 }
 
-// ----- Отрисовка -----
 function drawGame() {
-    // Фон
     ctx.fillStyle = '#222';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    // Сетка (опционально)
     ctx.strokeStyle = '#444';
     for (let i = 0; i <= gridSize; i++) {
         ctx.beginPath();
@@ -127,59 +110,33 @@ function drawGame() {
         ctx.lineTo(canvas.width, i * cellSize);
         ctx.stroke();
     }
-
-    // Еда
     ctx.fillStyle = 'red';
     ctx.fillRect(food.x * cellSize, food.y * cellSize, cellSize - 1, cellSize - 1);
-
-    // Змейка
     snake.forEach((segment, idx) => {
-        if (idx === 0) {
-            ctx.fillStyle = 'yellow'; // голова
-        } else {
-            ctx.fillStyle = 'lime';
-        }
+        ctx.fillStyle = idx === 0 ? 'yellow' : 'lime';
         ctx.fillRect(segment.x * cellSize, segment.y * cellSize, cellSize - 1, cellSize - 1);
-        // Глазки на голове
-        if (idx === 0) {
-            ctx.fillStyle = 'black';
-            const eyeSize = cellSize / 5;
-            const offsetX = direction === 'RIGHT' ? cellSize * 0.7 : (direction === 'LEFT' ? cellSize * 0.3 : cellSize * 0.5);
-            const offsetY = direction === 'DOWN' ? cellSize * 0.7 : (direction === 'UP' ? cellSize * 0.3 : cellSize * 0.5);
-            ctx.fillRect(segment.x * cellSize + offsetX - eyeSize/2, segment.y * cellSize + offsetY - eyeSize/2, eyeSize, eyeSize);
-            ctx.fillRect(segment.x * cellSize + (cellSize - offsetX) - eyeSize/2, segment.y * cellSize + offsetY - eyeSize/2, eyeSize, eyeSize);
-        }
     });
-
-    // Сообщения
     if (gameOver) {
         ctx.font = 'bold 24px Arial';
         ctx.fillStyle = 'white';
-        ctx.shadowBlur = 0;
-        ctx.fillText('GAME OVER', canvas.width/2 - 80, canvas.height/2);
-        ctx.font = '16px Arial';
-        ctx.fillStyle = '#ccc';
-        ctx.fillText('Нажмите "Новая игра"', canvas.width/2 - 90, canvas.height/2 + 40);
+        ctx.fillText('GAME OVER', canvas.width / 2 - 80, canvas.height / 2);
     }
     if (paused && !gameOver) {
         ctx.font = 'bold 24px Arial';
         ctx.fillStyle = 'white';
-        ctx.fillText('ПАУЗА', canvas.width/2 - 50, canvas.height/2);
+        ctx.fillText('ПАУЗА', canvas.width / 2 - 50, canvas.height / 2);
     }
 }
 
-// ----- Управление -----
 window.addEventListener('keydown', (e) => {
     if (gameOver) return;
     const key = e.key;
-    // Пробел – пауза
     if (key === ' ' || key === 'Space') {
         e.preventDefault();
         paused = !paused;
         drawGame();
         return;
     }
-    // Стрелки (исключаем противоположное направление)
     if (key === 'ArrowUp' && direction !== 'DOWN') nextDirection = 'UP';
     if (key === 'ArrowDown' && direction !== 'UP') nextDirection = 'DOWN';
     if (key === 'ArrowLeft' && direction !== 'RIGHT') nextDirection = 'LEFT';
@@ -187,10 +144,8 @@ window.addEventListener('keydown', (e) => {
     e.preventDefault();
 });
 
-// ----- Перезапуск игры -----
 function startGame() {
     if (gameInterval) clearInterval(gameInterval);
-    // Сброс состояния
     snake = [{x: 10, y: 10}];
     direction = 'RIGHT';
     nextDirection = 'RIGHT';
@@ -198,99 +153,14 @@ function startGame() {
     scoreSpan.textContent = '0';
     gameOver = false;
     paused = false;
-    // Генерируем еду не на змейке
-    let newFood = getRandomFreeCell();
-    if (!newFood) newFood = {x: 5, y: 5};
-    food = newFood;
+    const newFood = getRandomFreeCell();
+    food = newFood || {x: 5, y: 5};
     drawGame();
-    // Запускаем интервал
     gameInterval = setInterval(() => {
         updateGame();
         drawGame();
     }, 150);
 }
 
-restartBtn.addEventListener('click', () => {
-    startGame();
-});
-
-// Старт!
+restartBtn.addEventListener('click', startGame);
 startGame();
-
-//Таблица лидеров
-
-// Инициализация Supabase (убедитесь, что переменные определены)
-const supabaseUrl = 'https://ryygwvivzojsnvuzaxpp.supabase.co';
-const supabasePublishableKey = 'sb_publishable_vJivT1c9MiiFvPZxB7A3sw_XLhKSj8x';
-const supabase = window.supabase.createClient(supabaseUrl, supabasePublishableKey);
-
-// Функции таблицы лидеров
-async function loadAndDisplayLeaderboard() {
-    const container = document.getElementById('leaderboardList');
-    if (!container) {
-        console.error('Элемент leaderboardList не найден в HTML!');
-        return;
-    }
-    
-    console.log('Загружаю таблицу лидеров...');
-    container.innerHTML = 'Загрузка...';
-    
-    try {
-        const { data, error } = await supabase
-            .from('snake_scores')
-            .select('username, score')
-            .order('score', { ascending: false })
-            .limit(10);
-
-        if (error) {
-            console.error('Ошибка Supabase:', error);
-            container.innerHTML = `Ошибка: ${error.message}`;
-            return;
-        }
-
-        console.log('Полученные данные:', data);
-        
-        if (!data || data.length === 0) {
-            container.innerHTML = 'Пока нет рекордов';
-            return;
-        }
-
-        let html = '<table><th>Игрок</th><th>Счёт</th></tr>';
-        data.forEach(entry => {
-            html += `<tr><td>${escapeHtml(entry.username)}</td><td>${entry.score}</td></tr>`;
-        });
-        html += '</table>';
-        container.innerHTML = html;
-        
-    } catch (err) {
-        console.error('Исключение при загрузке:', err);
-        container.innerHTML = 'Ошибка загрузки рекордов';
-    }
-}
-
-function escapeHtml(str) {
-    if (!str) return '';
-    return str.replace(/[&<>]/g, function(m) {
-        if (m === '&') return '&amp;';
-        if (m === '<') return '&lt;';
-        if (m === '>') return '&gt;';
-        return m;
-    });
-}
-
-async function saveScoreIfNeeded(finalScore) {
-    // ... код сохранения ...
-}
-
-// Загружаем таблицу, только если элемент существует
-if (document.getElementById('leaderboardList')) {
-    loadAndDisplayLeaderboard();
-}
-
-// В функции updateGame в местах gameOver ДОБАВЛЯЕМ (без await):
-if (gameOver) {
-    saveScoreIfNeeded(score);   // не ждём
-    // alert и т.д.
-}
-
-//конец обновления 2
