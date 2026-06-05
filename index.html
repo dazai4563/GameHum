@@ -2,32 +2,23 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Змейка — таблица лидеров</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Вход в игру Змейка</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="game-container">
-        <div class="game-area">
-            <canvas id="gameCanvas" width="400" height="400"></canvas>
-        </div>
-        <div class="info">
-            <div>
-                <span>Счёт: <span id="score">0</span></span>
-                <span> | Рекорд: <span id="highScore">0</span></span>
-            </div>
-            <button id="restartBtn">🔄 Новая игра</button>
-        </div>
-        <div class="leaderboard">
-            <h3>🏆 Таблица лидеров</h3>
-            <div id="leaderboardList">Загрузка...</div>
+    <div class="container">
+        <h1>🐍 Змейка</h1>
+        <div class="auth-form">
+            <input type="email" id="email" placeholder="Email" required>
+            <input type="password" id="password" placeholder="Пароль (минимум 6 символов)" required>
+            <button id="login-btn">Войти</button>
+            <button id="register-btn">Зарегистрироваться</button>
+            <div id="message"></div>
         </div>
     </div>
-
-    <!-- Порядок подключения важен! -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="config.js"></script>
-    <script src="game.js"></script>
-    <script src="leaderboard.js"></script>
+    <script src="auth.js"></script>
 </body>
 </html>

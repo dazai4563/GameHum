@@ -1,10 +1,10 @@
-// game.js - вся логика змейки: движение, еда, счёт, рекорд, пауза
-
+// game.js - полная игра + авторизация + сохранение рекордов
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 const scoreSpan = document.getElementById('score');
 const highScoreSpan = document.getElementById('highScore');
 const restartBtn = document.getElementById('restartBtn');
+const logoutBtn = document.getElementById('logoutBtn');
 
 const gridSize = 20;
 const cellSize = canvas.width / gridSize;
@@ -18,9 +18,46 @@ let gameOver = false;
 let paused = false;
 let gameInterval = null;
 let highScore = localStorage.getItem('snakeHighScore') || 0;
-
 highScoreSpan.textContent = highScore;
 
+// ========== РАБОТА С SUPABASE И АВТОРИЗАЦИЯ ==========
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+let currentUser = null;
+
+// Проверяем, авторизован ли пользователь
+(async () => {
+    const { data: { user }, error } = await supabase.auth.getUser();
+    if (error || !user) {
+        // Нет пользователя - перенаправляем на страницу входа
+        window.location.href = 'index.html';
+        return;
+    }
+    currentUser = user;
+    console.log('Игрок:', currentUser.email);
+})();
+
+// Функция сохранения рекорда в Supabase
+async function saveScoreToSupabase(scoreToSave) {
+    if (!currentUser) return;
+    try {
+        const { error } = await supabase
+            .from('game_scores')
+            .insert({ user_id: currentUser.id, score: scoreToSave });
+        if (error) {
+            console.error('Ошибка сохранения рекорда:', error);
+        } else {
+            console.log('Рекорд сохранён в Supabase');
+            // Обновляем таблицу лидеров, если функция существует
+            if (typeof loadLeaderboard === 'function') {
+                loadLeaderboard();
+            }
+        }
+    } catch (err) {
+        console.error('Исключение при сохранении:', err);
+    }
+}
+
+// ========== ИГРОВАЯ ЛОГИКА ==========
 function getRandomFreeCell() {
     const freeCells = [];
     for (let i = 0; i < gridSize; i++) {
@@ -59,10 +96,9 @@ function updateGame() {
     if (newHead.x < 0 || newHead.x >= gridSize || newHead.y < 0 || newHead.y >= gridSize) {
         gameOver = true;
         clearInterval(gameInterval);
-        alert('Игра окончена! Нажмите "Новая игра"');
+        saveScoreToSupabase(score);   // СОХРАНЕНИЕ РЕКОРДА
+        alert('Игра окончена!');
         drawGame();
-        // Вызываем функцию сохранения, если она существует (из leaderboard.js)
-        if (typeof saveScoreToLeaderboard === 'function') saveScoreToLeaderboard(score);
         return;
     }
 
@@ -78,9 +114,9 @@ function updateGame() {
         if (!newFood) {
             gameOver = true;
             clearInterval(gameInterval);
+            saveScoreToSupabase(score);   // СОХРАНЕНИЕ РЕКОРДА (победа)
             alert('Поздравляем! Вы заполнили всё поле! Победа!');
             drawGame();
-            if (typeof saveScoreToLeaderboard === 'function') saveScoreToLeaderboard(score);
             return;
         }
         food = newFood;
@@ -91,9 +127,9 @@ function updateGame() {
     if (snake.slice(1).some(segment => segment.x === head.x && segment.y === head.y)) {
         gameOver = true;
         clearInterval(gameInterval);
-        alert('Игра окончена! Нажмите "Новая игра"');
+        saveScoreToSupabase(score);   // СОХРАНЕНИЕ РЕКОРДА
+        alert('Игра окончена!');
         drawGame();
-        if (typeof saveScoreToLeaderboard === 'function') saveScoreToLeaderboard(score);
     }
 }
 
@@ -163,4 +199,11 @@ function startGame() {
 }
 
 restartBtn.addEventListener('click', startGame);
+
+// Кнопка выхода
+logoutBtn.addEventListener('click', async () => {
+    await supabase.auth.signOut();
+    window.location.href = 'index.html';
+});
+
 startGame();
