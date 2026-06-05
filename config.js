@@ -2,4 +2,4 @@
 // Замените на свои реальные данные из Supabase
 
 const SUPABASE_URL = 'https://ryygwvivzojsnvuzaxpp.supabase.co';
-const SUPABASE_PUBLISHABLE_KEY = 'ваш_sb_publishable_ключ_сюда';
+const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_vJivT1c9MiiFvPZxB7A3sw_XLhKSj8x';
