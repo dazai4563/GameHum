@@ -227,8 +227,55 @@ const supabase = window.supabase.createClient(supabaseUrl, supabasePublishableKe
 // Функции таблицы лидеров
 async function loadAndDisplayLeaderboard() {
     const container = document.getElementById('leaderboardList');
-    if (!container) return; // если элемента нет — просто выходим
-    // ... остальной код ...
+    if (!container) {
+        console.error('Элемент leaderboardList не найден в HTML!');
+        return;
+    }
+    
+    console.log('Загружаю таблицу лидеров...');
+    container.innerHTML = 'Загрузка...';
+    
+    try {
+        const { data, error } = await supabase
+            .from('snake_scores')
+            .select('username, score')
+            .order('score', { ascending: false })
+            .limit(10);
+
+        if (error) {
+            console.error('Ошибка Supabase:', error);
+            container.innerHTML = `Ошибка: ${error.message}`;
+            return;
+        }
+
+        console.log('Полученные данные:', data);
+        
+        if (!data || data.length === 0) {
+            container.innerHTML = 'Пока нет рекордов';
+            return;
+        }
+
+        let html = '<table><th>Игрок</th><th>Счёт</th></tr>';
+        data.forEach(entry => {
+            html += `<tr><td>${escapeHtml(entry.username)}</td><td>${entry.score}</td></tr>`;
+        });
+        html += '</table>';
+        container.innerHTML = html;
+        
+    } catch (err) {
+        console.error('Исключение при загрузке:', err);
+        container.innerHTML = 'Ошибка загрузки рекордов';
+    }
+}
+
+function escapeHtml(str) {
+    if (!str) return '';
+    return str.replace(/[&<>]/g, function(m) {
+        if (m === '&') return '&amp;';
+        if (m === '<') return '&lt;';
+        if (m === '>') return '&gt;';
+        return m;
+    });
 }
 
 async function saveScoreIfNeeded(finalScore) {
