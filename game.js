@@ -1,5 +1,10 @@
 // game.js – полный код игры «Змейка»
 
+const supabaseUrl = 'https://ryygwvivzojsnvuzaxpp.supabase.co';
+const supabasePublishableKey = 'sb_publishable_vJivT1c9MiiFvPZxB7A3sw_XLhKSj8x';
+
+const supabase = window.supabase.createClient(supabaseUrl, supabaseAnonKey);
+
 // ----- Элементы DOM -----
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
@@ -217,3 +222,83 @@ restartBtn.addEventListener('click', () => {
 
 // Старт!
 startGame();
+
+async function loadAndDisplayLeaderboard() {
+    const { data, error } = await supabase
+        .from('snake_scores')
+        .select('username, score')
+        .order('score', { ascending: false })
+        .limit(10);
+
+    const container = document.getElementById('leaderboardList');
+    if (error) {
+        console.error('Ошибка загрузки рекордов:', error);
+        container.innerHTML = 'Не удалось загрузить рекорды';
+        return;
+    }
+
+    if (!data || data.length === 0) {
+        container.innerHTML = 'Пока нет рекордов';
+        return;
+    }
+
+    let html = '<table><tr><th>Игрок</th><th>Счёт</th></tr>';
+    data.forEach(entry => {
+        html += `<tr><td>${escapeHtml(entry.username)}</td><td>${entry.score}</td></tr>`;
+    });
+    html += '</table>';
+    container.innerHTML = html;
+}
+
+// Простая защита от XSS
+function escapeHtml(str) {
+    return str.replace(/[&<>]/g, function(m) {
+        if (m === '&') return '&amp;';
+        if (m === '<') return '&lt;';
+        if (m === '>') return '&gt;';
+        return m;
+    });
+}
+
+async function saveScoreIfNeeded(finalScore) {
+    // Спрашиваем имя игрока (можно через prompt или отдельное поле ввода)
+    let playerName = localStorage.getItem('snakePlayerName');
+    if (!playerName) {
+        playerName = prompt('Игра окончена! Ваш счёт: ' + finalScore + '\nВведите ваше имя для таблицы лидеров:', 'Аноним');
+        if (!playerName) playerName = 'Аноним';
+        localStorage.setItem('snakePlayerName', playerName);
+    } else {
+        // Можно предложить обновить имя, если хотите
+        const update = confirm(`Ваш счёт: ${finalScore}\nСохранить результат как "${playerName}"?`);
+        if (!update) {
+            playerName = prompt('Введите ваше имя:', playerName);
+            if (!playerName) playerName = 'Аноним';
+            localStorage.setItem('snakePlayerName', playerName);
+        }
+    }
+
+    const { error } = await supabase
+        .from('snake_scores')
+        .insert([{ username: playerName, score: finalScore }]);
+
+    if (error) {
+        console.error('Ошибка сохранения рекорда:', error);
+        alert('Не удалось сохранить рекорд в таблицу лидеров');
+    } else {
+        // Перезагружаем таблицу
+        await loadAndDisplayLeaderboard();
+    }
+}
+
+// Вместо alert сразу:
+if (newHead.x < 0 ) {
+    gameOver = true;
+    clearInterval(gameInterval);
+    saveScoreIfNeeded(score);  // <-- вызываем асинхронно
+    alert('Игра окончена!');
+    drawGame();
+    return;
+}
+
+// После инициализации supabase
+loadAndDisplayLeaderboard();
