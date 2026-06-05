@@ -40,22 +40,19 @@ let currentUser = null;
 // Функция сохранения рекорда в Supabase
 async function saveScoreToSupabase(scoreToSave) {
     if (!currentUser) return;
+    // Получаем username из метаданных пользователя
+    const username = currentUser.user_metadata?.username || currentUser.email.split('@')[0];
     try {
-        const { error } = await supabase
+        const { error } = await window.supabaseClient
             .from('game_scores')
-            .insert({ user_id: currentUser.id, score: scoreToSave });
-        if (error) {
-            console.error('Ошибка сохранения рекорда:', error);
-        } else {
-            console.log('Рекорд сохранён в Supabase');
-            // Обновляем таблицу лидеров, если функция существует
-            if (typeof loadLeaderboard === 'function') {
-                loadLeaderboard();
-            }
-        }
-    } catch (err) {
-        console.error('Исключение при сохранении:', err);
-    }
+            .insert({ 
+                user_id: currentUser.id, 
+                score: scoreToSave,
+                username: username
+            });
+        if (error) console.error('Ошибка сохранения:', error);
+        else if (typeof loadLeaderboard === 'function') loadLeaderboard();
+    } catch (err) { console.error(err); }
 }
 
 // ========== ИГРОВАЯ ЛОГИКА ==========
