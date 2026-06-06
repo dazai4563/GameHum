@@ -67,10 +67,14 @@ function updateGame() {
         }
         food = newFood;
     }
+    
     if (snake.slice(1).some(s => s.x === snake[0].x && s.y === snake[0].y)) {
         gameOver = true;
         clearInterval(gameInterval);
         alert('Game Over');
+        if (score > 0) {
+            addXP(Math.min(score, 50)); // не больше 50 XP за партию
+        }
         if (window.currentUser && score > 0 && typeof saveScoreToLeaderboard === 'function') {
             saveScoreToLeaderboard(score);
         }

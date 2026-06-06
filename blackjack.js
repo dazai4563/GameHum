@@ -1,4 +1,4 @@
-// blackjack.js – исправленная версия (ставки, максимум, одна кнопка выхода)
+// blackjack.js – исправленная версия (локальное XP, корректные ставки)
 
 let deck = [], playerHand = [], dealerHand = [];
 let gameActive = false, bettingPhase = true;
@@ -12,7 +12,7 @@ const setMaxBetBtn = document.getElementById('setMaxBetBtn');
 const confirmBetBtn = document.getElementById('confirmBetBtn');
 const hitBtn = document.getElementById('hitBtn');
 const standBtn = document.getElementById('standBtn');
-const exitToBetBtn = document.getElementById('exitToBetBtn');  // кнопка в game-area
+const exitToBetBtn = document.getElementById('exitToBetBtn');
 const newRoundBtnContainer = document.getElementById('newRoundBtnContainer');
 const gameResultDiv = document.getElementById('gameResult');
 const dealerCardsDiv = document.getElementById('dealerCards');
@@ -21,7 +21,7 @@ const dealerScoreSpan = document.getElementById('dealerScore');
 const playerScoreSpan = document.getElementById('playerScore');
 const currentXPDisplaySpan = document.getElementById('currentXPDisplay');
 
-// Функции колоды
+// === Функции колоды ===
 function createDeck() {
     const suits = ['♠','♥','♣','♦'];
     const values = ['2','3','4','5','6','7','8','9','10','J','Q','K','A'];
@@ -65,19 +65,39 @@ function updateUI() {
         if (dealerScoreSpan) dealerScoreSpan.textContent = calculateScore(dealerHand);
     }
 }
-async function refreshUserXP() {
+
+// === XP (локальное хранилище) ===
+function loadXP() {
     let xp = localStorage.getItem('guest_xp');
     currentUserXP = xp ? parseInt(xp) : 0;
     if (currentXPDisplaySpan) currentXPDisplaySpan.textContent = currentUserXP;
-    if (betInput) {
-        betInput.max = currentUserXP;
-        // Если текущее значение ставки больше доступного XP, уменьшаем до XP (но не ниже 1)
-        let currentVal = parseInt(betInput.value);
-        if (isNaN(currentVal) || currentVal < 1) betInput.value = 1;
-        if (currentVal > currentUserXP && currentUserXP > 0) betInput.value = currentUserXP;
-        else if (currentUserXP === 0) betInput.value = 0;
+    if (betInput) betInput.max = currentUserXP;
+    // Если текущая ставка больше XP, уменьшаем до XP (но не ниже 1)
+    let curVal = parseInt(betInput?.value);
+    if (isNaN(curVal) || curVal > currentUserXP) {
+        betInput.value = Math.max(1, currentUserXP);
     }
 }
+function saveXP(value) {
+    localStorage.setItem('guest_xp', value);
+    currentUserXP = value;
+    if (currentXPDisplaySpan) currentXPDisplaySpan.textContent = value;
+    if (betInput) betInput.max = value;
+    let curVal = parseInt(betInput?.value);
+    if (isNaN(curVal) || curVal > value) {
+        betInput.value = Math.max(1, value);
+    }
+}
+function addXP(amount) {
+    let newXP = currentUserXP + amount;
+    if (newXP < 0) newXP = 0;
+    saveXP(newXP);
+}
+function subtractXP(amount) {
+    addXP(-amount);
+}
+
+// === Режимы ===
 function showBettingMode() {
     bettingPhase = true; gameActive = false;
     if (bettingMenu) bettingMenu.style.display = 'block';
@@ -86,6 +106,7 @@ function showBettingMode() {
     playerHand = []; dealerHand = [];
     updateUI();
     if (gameResultDiv) gameResultDiv.innerHTML = '';
+    loadXP(); // обновить XP и ставку
 }
 function showGameMode() {
     bettingPhase = false;
@@ -93,13 +114,12 @@ function showGameMode() {
     if (gameArea) gameArea.style.display = 'block';
     if (newRoundBtnContainer) newRoundBtnContainer.innerHTML = '';
 }
+
+// === Завершение раунда ===
 async function endRound(result, message, xpChange) {
     gameActive = false;
     if (xpChange !== 0) {
-        let newXP = currentUserXP + xpChange;
-        if (newXP < 0) newXP = 0;
-        localStorage.setItem('guest_xp', newXP);
-        await refreshUserXP();
+        addXP(xpChange);
     }
     updateUI();
     if (gameResultDiv) gameResultDiv.innerHTML = message;
@@ -113,6 +133,7 @@ async function endRound(result, message, xpChange) {
         document.getElementById('newRoundFromGameBtn')?.addEventListener('click', () => startNewRoundAfterGame());
         document.getElementById('exitAfterGameBtn')?.addEventListener('click', () => showBettingMode());
     }
+    // Сохраняем рекорд, если пользователь залогинен
     if (result === 'win' && window.currentUser && typeof saveScoreToLeaderboard === 'function') {
         saveScoreToLeaderboard(1);
     }
@@ -121,6 +142,8 @@ async function startNewRoundAfterGame() {
     if (newRoundBtnContainer) newRoundBtnContainer.innerHTML = '';
     await startGame();
 }
+
+// === Ход дилера ===
 async function dealerTurn() {
     let dealerScore = calculateScore(dealerHand);
     while (dealerScore < 17) {
@@ -134,11 +157,13 @@ async function dealerTurn() {
     else if (dealerScore < playerScore) await endRound('win', `Вы набрали ${playerScore}. Вы выиграли ${currentBet} XP!`, currentBet);
     else await endRound('push', 'Ничья! Ставка возвращена.', 0);
 }
+
+// === Начало игры ===
 async function startGame() {
     if (gameActive) return;
     let bet = parseInt(betInput?.value || 0);
-    if (isNaN(bet) || bet < 1) { if(gameResultDiv) gameResultDiv.innerHTML = 'Ставка должна быть не менее 1 XP'; return; }
-    if (bet > currentUserXP) { if(gameResultDiv) gameResultDiv.innerHTML = `Недостаточно XP. Ваш XP: ${currentUserXP}`; return; }
+    if (isNaN(bet) || bet < 1) { if(gameResultDiv) gameResultDiv.innerHTML = 'Ставка должна быть ≥1'; return; }
+    if (bet > currentUserXP) { if(gameResultDiv) gameResultDiv.innerHTML = `Не хватает XP (${currentUserXP})`; return; }
     currentBet = bet;
     deck = createDeck();
     playerHand = [deck.pop(), deck.pop()];
@@ -152,7 +177,7 @@ async function startGame() {
     if (playerScore === 21) {
         let dealerScore = calculateScore(dealerHand);
         if (dealerScore === 21) await endRound('push', 'У обоих блэкджек! Ничья.', 0);
-        else await endRound('win', `Блэкджек! Вы выиграли ${currentBet} XP!`, currentBet);
+        else await endRound('win', `Блэкджек! +${currentBet} XP`, currentBet);
     }
 }
 async function hit() {
@@ -160,7 +185,7 @@ async function hit() {
     playerHand.push(deck.pop());
     updateUI();
     let score = calculateScore(playerHand);
-    if (score > 21) await endRound('lose', `Перебор! Вы проиграли ${currentBet} XP.`, -currentBet);
+    if (score > 21) await endRound('lose', `Перебор! -${currentBet} XP`, -currentBet);
     else if (score === 21) await stand();
 }
 async function stand() {
@@ -169,23 +194,22 @@ async function stand() {
     if (standBtn) standBtn.disabled = true;
     await dealerTurn();
 }
-async function setMaxBet() {
-    await refreshUserXP();
-    if (betInput) {
-        if (currentUserXP > 0) betInput.value = currentUserXP;
-        else betInput.value = 1;   // если XP = 0, ставим минимальную ставку 1
-    }
+function setMaxBet() {
+    loadXP(); // гарантирует актуальный currentUserXP
+    if (betInput) betInput.value = currentUserXP;
 }
 async function confirmBet() {
     let bet = parseInt(betInput?.value || 0);
-    if (isNaN(bet) || bet < 1) { if(gameResultDiv) gameResultDiv.innerHTML = 'Введите ставку не менее 1 XP'; return; }
+    if (isNaN(bet) || bet < 1) { if(gameResultDiv) gameResultDiv.innerHTML = 'Введите ставку ≥1'; return; }
     if (bet > currentUserXP) { if(gameResultDiv) gameResultDiv.innerHTML = `Недостаточно XP. Доступно: ${currentUserXP}`; return; }
     currentBet = bet;
     showGameMode();
     await startGame();
 }
+
+// === Инициализация ===
 document.addEventListener('DOMContentLoaded', async () => {
-    await refreshUserXP();
+    loadXP();
     showBettingMode();
     if (confirmBetBtn) confirmBetBtn.addEventListener('click', confirmBet);
     if (setMaxBetBtn) setMaxBetBtn.addEventListener('click', setMaxBet);
@@ -193,4 +217,4 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (standBtn) standBtn.addEventListener('click', stand);
     if (exitToBetBtn) exitToBetBtn.addEventListener('click', () => showBettingMode());
 });
-setInterval(refreshUserXP, 3000);
+setInterval(loadXP, 3000);
