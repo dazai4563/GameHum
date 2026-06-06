@@ -1,4 +1,4 @@
-// slots.js – исправленная версия (однократное списание)
+// slots.js – исправленный
 const spinBtn = document.getElementById('spinBtn');
 const betInput = document.getElementById('betAmount');
 const maxBetBtn = document.getElementById('maxBetBtn');
@@ -18,21 +18,11 @@ const symbols = [
     { emoji: '💯', name: '100', multiplier: 30, weight: 4 }
 ];
 
-let currentMp = 0;
-
-async function loadMp() {
-    currentMp = await getCurrentMp();
-    document.getElementById('mpValue').innerText = currentMp;
-    betInput.max = currentMp;
-    if (parseInt(betInput.value) > currentMp) betInput.value = Math.max(1, currentMp);
-}
-
-async function saveMp(value) {
-    await setMp(value);
-    currentMp = value;
-    document.getElementById('mpValue').innerText = value;
-    betInput.max = value;
-    if (parseInt(betInput.value) > value) betInput.value = Math.max(1, value);
+async function updateUI() {
+    const mp = await getCurrentMp();
+    document.getElementById('mpValue').innerText = mp;
+    betInput.max = mp;
+    if (parseInt(betInput.value) > mp) betInput.value = Math.max(1, mp);
 }
 
 function getRandomSymbol() {
@@ -50,7 +40,7 @@ function calculateWin(sym1, sym2, sym3, bet) {
     if (sym1.emoji === '💯' && sym2.emoji === '💯' && sym3.emoji === '💯') {
         const win = bet * 30;
         setTimeout(() => alert(`🎉 ДЖЕКПОТ! 🎉\nВыпали три 💯! Вы выиграли ${win} Mp!`), 100);
-        return { win, message: `💯💯💯 ДЖЕКПОТ! x10! Выигрыш: ${win} Mp 💯💯💯` };
+        return { win, message: `💯💯💯 ДЖЕКПОТ! x30! Выигрыш: ${win} Mp 💯💯💯` };
     }
     if (sym1.emoji === sym2.emoji && sym2.emoji === sym3.emoji) {
         const win = bet * sym1.multiplier;
@@ -67,7 +57,7 @@ function calculateWin(sym1, sym2, sym3, bet) {
 function spinReelWithAnimation(bet) {
     let spins = 0;
     const maxSpins = 10;
-    const interval = setInterval(() => {
+    const interval = setInterval(async () => {
         const r1 = getRandomSymbol();
         const r2 = getRandomSymbol();
         const r3 = getRandomSymbol();
@@ -83,13 +73,19 @@ function spinReelWithAnimation(bet) {
             reel1.textContent = final1.emoji;
             reel2.textContent = final2.emoji;
             reel3.textContent = final3.emoji;
+            const currentMp = await getCurrentMp();
             const result = calculateWin(final1, final2, final3, bet);
             let newMp;
             if (result.win > 0) {
-                await saveMp(currentMp + result.win);
+                newMp = currentMp + result.win;
+                await setMp(newMp);
+                resultDiv.innerHTML = `<span style="color:#aaffaa;">${result.message}<br>Новый баланс: ${newMp} Mp</span>`;
             } else {
-                await saveMp(currentMp - bet);
+                newMp = currentMp - bet;
+                await setMp(newMp);
+                resultDiv.innerHTML = `<span style="color:#ffaaaa;">${result.message}<br>Вы проиграли ${bet} Mp. Баланс: ${newMp} Mp</span>`;
             }
+            await updateUI();
             spinBtn.disabled = false;
         }
     }, 80);
@@ -102,6 +98,7 @@ async function spin() {
         resultDiv.innerHTML = 'Ставка должна быть не менее 1 Mp';
         return;
     }
+    const currentMp = await getCurrentMp();
     if (bet > currentMp) {
         resultDiv.innerHTML = `Недостаточно Mp. У вас ${currentMp} Mp`;
         return;
@@ -110,8 +107,9 @@ async function spin() {
     spinReelWithAnimation(bet);
 }
 
-maxBetBtn.addEventListener('click', () => {
-    betInput.value = currentMp;
+maxBetBtn.addEventListener('click', async () => {
+    const mp = await getCurrentMp();
+    betInput.value = mp;
 });
 spinBtn.addEventListener('click', spin);
-loadMp();
+updateUI();

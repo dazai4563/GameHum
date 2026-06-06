@@ -1,4 +1,4 @@
-// roulette.js – исправленная версия (через глобальные mp функции)
+// roulette.js – исправленный
 const spinBtn = document.getElementById('spinBtn');
 const betInput = document.getElementById('betAmount');
 const maxBetBtn = document.getElementById('maxBetBtn');
@@ -15,31 +15,22 @@ const sectors = [
     { name: '🎁 +200%', multiplier: 3.0 }
 ];
 
-let currentMp = 0;
-
-async function loadMp() {
-    currentMp = await getCurrentMp();
-    document.getElementById('mpValue').innerText = currentMp;
-    betInput.max = currentMp;
-    if (parseInt(betInput.value) > currentMp) betInput.value = Math.max(1, currentMp);
+async function updateUI() {
+    const mp = await getCurrentMp();
+    document.getElementById('mpValue').innerText = mp;
+    betInput.max = mp;
+    if (parseInt(betInput.value) > mp) betInput.value = Math.max(1, mp);
 }
 
-async function saveMp(value) {
-    await setMp(value);
-    currentMp = value;
-    document.getElementById('mpValue').innerText = value;
-    betInput.max = value;
-    if (parseInt(betInput.value) > value) betInput.value = Math.max(1, value);
-}
-
-function spinWheel() {
+async function spinWheel() {
     let bet = parseInt(betInput.value);
     if (isNaN(bet) || bet < 1) {
         resultDiv.innerHTML = 'Ставка должна быть не менее 1 Mp';
         return;
     }
+    const currentMp = await getCurrentMp();
     if (bet > currentMp) {
-        resultDiv.innerHTML = `Недостаточно Mp. Ваши Mp: ${currentMp}`;
+        resultDiv.innerHTML = `Недостаточно Mp. У вас ${currentMp} Mp`;
         return;
     }
     const randomIndex = Math.floor(Math.random() * sectors.length);
@@ -57,14 +48,16 @@ function spinWheel() {
         message = `${sector.name}! Вы выиграли ${winAmount} Mp!`;
     }
     const newMp = currentMp + winAmount;
-    saveMp(newMp);
+    await setMp(newMp);
     resultDiv.innerHTML = `<strong>${message}</strong><br>Теперь у вас ${newMp} Mp.`;
+    await updateUI();
     spinBtn.style.transform = 'scale(0.98)';
     setTimeout(() => spinBtn.style.transform = '', 150);
 }
 
-maxBetBtn.addEventListener('click', () => {
-    betInput.value = currentMp;
+maxBetBtn.addEventListener('click', async () => {
+    const mp = await getCurrentMp();
+    betInput.value = mp;
 });
 spinBtn.addEventListener('click', spinWheel);
-loadMp();
+updateUI();
