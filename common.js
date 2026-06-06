@@ -1,30 +1,22 @@
-// common.js
+// common.js – общие функции (теперь не требуют регистрации)
 window.currentUser = null;
 
 async function checkAuth() {
     const { data: { user }, error } = await window.supabaseClient.auth.getUser();
-    window.currentUser = error ? null : user;
-    
-    // Обновляем отображение имени пользователя
-    const userSpan = document.getElementById('currentUser');
-    if (userSpan) {
-        if (window.currentUser) {
-            const username = window.currentUser.user_metadata?.username || 
-                             window.currentUser.email?.split('@')[0] || 'Игрок';
-            userSpan.textContent = `${username} 👤`;
-        } else {
-            userSpan.textContent = 'Гость 👤';
-        }
-    }
+    if (error) console.error('Ошибка checkAuth:', error);
+    window.currentUser = user || null;
     return window.currentUser;
 }
 
 async function logout() {
     await window.supabaseClient.auth.signOut();
-    window.currentUser = null;
-    await checkAuth(); // обновим интерфейс
+    // После выхода создаём новую анонимную сессию
+    await window.supabaseClient.auth.signInAnonymously();
+    await checkAuth();
+    if (typeof displayXP === 'function') displayXP();
+    window.location.reload(); // или обновить интерфейс
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-    checkAuth();
+document.addEventListener('DOMContentLoaded', async () => {
+    await checkAuth();
 });

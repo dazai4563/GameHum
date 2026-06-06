@@ -1,18 +1,16 @@
-// leaderboard.js – универсальная таблица лидеров
-// Перед подключением этого скрипта определите window.GAME_NAME (или const GAME_NAME)
+// leaderboard.js – универсальная таблица лидеров (имя игры берётся из window.GAME_NAME)
+const GAME_NAME = window.GAME_NAME || 'snake';
 
 async function loadLeaderboard() {
     const supabase = window.supabaseClient;
     const container = document.getElementById('leaderboardList');
     if (!container) return;
 
-    const game = window.GAME_NAME || 'snake'; // по умолчанию змейка
-
     try {
         const { data, error } = await supabase
             .from('game_scores')
             .select('username, score')
-            .eq('game_name', game)
+            .eq('game_name', GAME_NAME)
             .order('score', { ascending: false })
             .limit(10);
 
@@ -25,7 +23,8 @@ async function loadLeaderboard() {
 
         let html = '<table><th>Игрок</th><th>Счёт</th></tr>';
         data.forEach(entry => {
-            html += `<tr><td>${escapeHtml(entry.username)}</td><td>${entry.score}</td><tr>`;
+            const name = entry.username || 'Аноним';
+            html += `<tr><td>${escapeHtml(name)}</td><td>${entry.score}</td></tr>`;
         });
         html += '</table>';
         container.innerHTML = html;
@@ -36,29 +35,23 @@ async function loadLeaderboard() {
 }
 
 window.saveScoreToLeaderboard = async function(score) {
-    if (!window.currentUser) {
-        console.log('Пользователь не авторизован, рекорд не сохранён');
-        return;
-    }
+    if (!window.currentUser) return;
     const supabase = window.supabaseClient;
-    const username = window.currentUser.user_metadata?.username || 
-                     window.currentUser.email?.split('@')[0] || 'Аноним';
-    const game = window.GAME_NAME || 'snake';
+    let username = window.currentUser.user_metadata?.username;
+    if (!username) {
+        username = window.currentUser.email ? window.currentUser.email.split('@')[0] : 'Аноним';
+    }
     try {
         const { error } = await supabase
             .from('game_scores')
             .insert({
                 user_id: window.currentUser.id,
                 username: username,
-                game_name: game,
+                game_name: GAME_NAME,
                 score: score
             });
-        if (error) {
-            console.error('Ошибка сохранения:', error);
-        } else {
-            console.log('Рекорд сохранён');
-            loadLeaderboard();
-        }
+        if (error) console.error('Ошибка сохранения:', error);
+        else loadLeaderboard();
     } catch (err) { console.error(err); }
 };
 

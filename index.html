@@ -2,27 +2,21 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>GameTurd</title>
+    <title>Игровая платформа</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <div class="container">
-    <h1>GameTurd</h1>
+    <h1>🎮 Игровая платформа</h1>
     <div class="user-status">
         <span id="currentUser"></span>
         <span>⭐ XP: <span id="xpValue">0</span></span>
-        <!-- Единая точка входа/выхода -->
         <span id="authSection">
-            <a href="login.html?redirect=index.html" id="loginLink">Войти</a>
+            <button id="showLinkBtn" style="display: none;">Привязать аккаунт</button>
             <button id="logoutBtn" style="display: none;">Выйти</button>
         </span>
     </div>
     <div class="game-menu">
-        <div class="game-card">
-            <h2>🃏 Блэкджек (21)</h2>
-            <p>Игра на XP. Удвоение ставки при победе.</p>
-            <a href="blackjack.html" class="btn">Играть</a>
-        </div>
         <div class="game-card">
             <h2>🐍 Змейка</h2>
             <p>Классическая игра. Управляй стрелками.</p>
@@ -33,39 +27,59 @@
             <p>Игра против компьютера. Счёт до 3 побед.</p>
             <a href="rps.html" class="btn">Играть</a>
         </div>
+        <div class="game-card">
+            <h2>🃏 Блэкджек (21)</h2>
+            <p>Игра на XP. Удвоение ставки при победе.</p>
+            <a href="blackjack.html" class="btn">Играть</a>
+        </div>
     </div>
 </div>
+
+<!-- Модальное окно для привязки аккаунта -->
+<div id="linkModal" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #2a2a3a; padding: 20px; border-radius: 16px; z-index: 1000; box-shadow: 0 0 20px black;">
+    <h3>🔗 Привязать email и пароль</h3>
+    <input type="text" id="linkUsername" placeholder="Имя пользователя" style="display: block; margin: 10px 0; padding: 8px; width: 100%;">
+    <input type="email" id="linkEmail" placeholder="Email" style="display: block; margin: 10px 0; padding: 8px; width: 100%;">
+    <input type="password" id="linkPassword" placeholder="Пароль" style="display: block; margin: 10px 0; padding: 8px; width: 100%;">
+    <button id="linkAccountBtn">Привязать</button>
+    <button id="closeModalBtn">Отмена</button>
+    <div id="linkMessage" style="margin-top: 10px;"></div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="config.js"></script>
 <script src="common.js"></script>
 <script src="xp.js"></script>
 <script>
-    // Дополнительное обновление интерфейса
-    document.addEventListener('DOMContentLoaded', async () => {
-        // Функция обновления видимости кнопок входа/выхода
-        function updateAuthButtons() {
-            const loginLink = document.getElementById('loginLink');
-            const logoutBtn = document.getElementById('logoutBtn');
-            if (window.currentUser) {
-                loginLink.style.display = 'none';
+    // Управление модальным окном и кнопками
+    document.addEventListener('DOMContentLoaded', () => {
+        const showLinkBtn = document.getElementById('showLinkBtn');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const modal = document.getElementById('linkModal');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+
+        function updateButtons() {
+            if (window.currentUser && !window.currentUser.email) {
+                showLinkBtn.style.display = 'inline-block';
+                logoutBtn.style.display = 'inline-block';
+            } else if (window.currentUser && window.currentUser.email) {
+                showLinkBtn.style.display = 'none';
                 logoutBtn.style.display = 'inline-block';
             } else {
-                loginLink.style.display = 'inline-block';
+                showLinkBtn.style.display = 'none';
                 logoutBtn.style.display = 'none';
             }
         }
-        await updateAuthButtons();
-        if (typeof displayXP === 'function') await displayXP();
 
-        // Обработчик выхода
-        const logoutBtn = document.getElementById('logoutBtn');
-        if (logoutBtn) {
-            logoutBtn.addEventListener('click', async () => {
-                await logout(); // функция из common.js
-                await updateAuthButtons();
-                if (typeof displayXP === 'function') await displayXP();
-            });
-        }
+        showLinkBtn.onclick = () => { modal.style.display = 'block'; };
+        closeModalBtn.onclick = () => { modal.style.display = 'none'; };
+        logoutBtn.onclick = async () => {
+            await logout();
+            updateButtons();
+        };
+
+        setInterval(updateButtons, 1000);
+        updateButtons();
     });
 </script>
 </body>
