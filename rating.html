@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Рейтинг игроков</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="container">
+    <h1>🏆 Таблицы рекордов</h1>
+    <div class="rating-controls">
+        <label for="gameSelect">Выберите игру:</label>
+        <select id="gameSelect">
+            <option value="snake">🐍 Змейка</option>
+            <option value="rps">✊ Камень, ножницы, бумага</option>
+            <option value="blackjack">🃏 Блэкджек</option>
+            <option value="minesweeper">💣 Сапёр</option>
+        </select>
+        <button id="refreshBtn">🔄 Обновить</button>
+        <a href="index.html" class="btn back-btn">← На главную</a>
+    </div>
+    <div class="leaderboard" style="margin-top: 20px;">
+        <h2 id="gameTitle">Змейка</h2>
+        <div id="leaderboardList">Загрузка...</div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
+<script src="common.js"></script>
+<script src="rating.js"></script>
+</body>
+</html>

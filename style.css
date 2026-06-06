@@ -373,3 +373,26 @@ button:hover {
     justify-content: center;
     gap: 15px;
 }
+
+.rating-controls {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+.rating-controls select, .rating-controls button {
+    padding: 8px 15px;
+    font-size: 16px;
+    border-radius: 30px;
+    border: none;
+    cursor: pointer;
+}
+.back-btn {
+    background: #ffaa66;
+    text-decoration: none;
+}
+.back-btn:hover {
+    background: #e08844;
+}
