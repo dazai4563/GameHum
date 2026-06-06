@@ -396,3 +396,50 @@ button:hover {
 .back-btn:hover {
     background: #e08844;
 }
+
+/* Секретное меню */
+.secret-container {
+    background: #0a0a10 !important;
+    border: 1px solid #2a2a3a;
+    box-shadow: 0 0 20px rgba(0,0,0,0.8);
+}
+.secret-game-menu {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: center;
+    margin-top: 20px;
+}
+.secret-game-card {
+    background: #111118;
+    border-radius: 16px;
+    padding: 20px;
+    width: 220px;
+    text-align: center;
+    transition: 0.2s;
+    border: 1px solid #2a2a3a;
+}
+.secret-game-card:hover {
+    transform: translateY(-5px);
+    background: #181824;
+}
+.secret-game-card h2 {
+    color: #aaa;
+}
+.secret-game-card p {
+    color: #666;
+}
+.secret-btn {
+    background: #2a2a3a;
+    color: #ccc;
+}
+.secret-btn:hover {
+    background: #3a3a4a;
+}
+#backToNormalBtn {
+    background: #2a2a3a;
+    color: #ccc;
+}
+#backToNormalBtn:hover {
+    background: #3a3a4a;
+}
