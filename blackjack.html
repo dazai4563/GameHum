@@ -5,68 +5,19 @@
     <title>Блэкджек – игра на XP</title>
     <link rel="stylesheet" href="style.css">
     <style>
-        /* Дополнительные стили для блэкджека */
-        .blackjack-table {
-            background: #1a4d2a;
-            border-radius: 20px;
-            padding: 20px;
-            margin-top: 20px;
-        }
-        .cards {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            flex-wrap: wrap;
-            margin: 15px 0;
-        }
-        .card {
-            background: white;
-            color: black;
-            width: 70px;
-            height: 100px;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-            font-weight: bold;
-            box-shadow: 2px 2px 5px rgba(0,0,0,0.3);
-        }
-        .card.red {
-            color: red;
-        }
-        .bet-area {
-            background: #2a2a3a;
-            padding: 15px;
-            border-radius: 16px;
-            margin: 15px 0;
-        }
-        .bet-control {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 15px;
-            margin-bottom: 10px;
-        }
-        .bet-control input {
-            padding: 8px;
-            font-size: 18px;
-            width: 120px;
-            text-align: center;
-            border-radius: 20px;
-            border: none;
-        }
-        .action-buttons {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            margin: 15px 0;
-        }
-        .game-status {
-            font-size: 20px;
-            font-weight: bold;
-            margin: 15px 0;
-        }
+        .blackjack-table { background: #1a4d2a; border-radius: 20px; padding: 20px; margin-top: 20px; }
+        .cards { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; margin: 15px 0; }
+        .card { background: white; color: black; width: 70px; height: 100px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: bold; box-shadow: 2px 2px 5px rgba(0,0,0,0.3); }
+        .card.red { color: red; }
+        .bet-area { background: #2a2a3a; padding: 15px; border-radius: 16px; margin: 15px 0; }
+        .bet-control { display: flex; justify-content: center; align-items: center; gap: 15px; margin-bottom: 10px; }
+        .bet-control input { padding: 8px; font-size: 18px; width: 120px; text-align: center; border-radius: 20px; border: none; }
+        .action-buttons { display: flex; justify-content: center; gap: 15px; margin: 15px 0; }
+        .game-status { font-size: 20px; font-weight: bold; margin: 15px 0; }
+        .action-btn { background: #4c9aff; border: none; color: white; padding: 10px 24px; border-radius: 40px; font-weight: bold; cursor: pointer; transition: 0.2s; margin: 0 5px; }
+        .action-btn:hover { background: #2a7fcc; transform: scale(1.02); }
+        .exit-btn { background: #ffaa66; }
+        .exit-btn:hover { background: #e08844; }
     </style>
 </head>
 <body>
@@ -76,42 +27,40 @@
             <span id="currentUser"></span>
             <span>⭐ XP: <span id="xpValue">0</span></span>
             <button id="logoutBtn" style="display: none;">Выйти</button>
-            <a href="login.html?redirect=blackjack.html" id="loginLink">Войти (для игры на XP)</a>
+            <a href="login.html?redirect=blackjack.html" id="loginLink" style="display: none;">Войти</a>
         </div>
         <a href="index.html" class="back-link">← Меню</a>
     </div>
 
     <h2>🃏 Блэкджек (21)</h2>
 
-    <div class="bet-area">
+    <!-- Режим выбора ставки -->
+    <div id="bettingMenu" class="bet-area">
+        <h3>⚡ Сделайте ставку</h3>
         <div class="bet-control">
             <label>Ставка XP:</label>
             <input type="number" id="betAmount" min="1" value="10" step="1">
-            <button id="setMaxBetBtn">Максимум</button>
+            <button id="setMaxBetBtn" class="action-btn">Максимум</button>
         </div>
         <div>Ваш XP: <span id="currentXPDisplay">0</span></div>
+        <button id="confirmBetBtn" class="action-btn" style="margin-top: 10px;">🎲 Начать игру</button>
     </div>
 
-    <div class="blackjack-table">
-        <div>
-            <h3>Дилер</h3>
-            <div id="dealerCards" class="cards"></div>
-            <div>Очки дилера: <span id="dealerScore">0</span></div>
+    <!-- Игровая область (скрыта по умолчанию) -->
+    <div id="gameArea" style="display: none;">
+        <div class="blackjack-table">
+            <div><h3>Дилер</h3><div id="dealerCards" class="cards"></div><div>Очки дилера: <span id="dealerScore">0</span></div></div>
+            <div><h3>Игрок</h3><div id="playerCards" class="cards"></div><div>Очки игрока: <span id="playerScore">0</span></div></div>
         </div>
-        <div>
-            <h3>Игрок</h3>
-            <div id="playerCards" class="cards"></div>
-            <div>Очки игрока: <span id="playerScore">0</span></div>
+        <div class="action-buttons">
+            <button id="hitBtn" class="action-btn" disabled>📤 Взять карту</button>
+            <button id="standBtn" class="action-btn" disabled>✋ Остановиться</button>
+            <button id="exitToBetBtn" class="exit-btn">🚪 Выйти в меню ставок</button>
         </div>
+        <div id="gameResult" class="game-status"></div>
+        <div id="newRoundBtnContainer" style="text-align: center; margin-top: 10px;"></div>
     </div>
 
-    <div class="action-buttons">
-        <button id="dealBtn">🎲 Сделать ставку и раздать</button>
-        <button id="hitBtn" disabled>Взять карту</button>
-        <button id="standBtn" disabled>Остановиться</button>
-        <button id="newRoundBtn" disabled>Новый раунд</button>
-    </div>
-    <div id="gameResult" class="game-status"></div>
     <div class="leaderboard">
         <h3>🏆 Таблица лидеров (Блэкджек)</h3>
         <div id="leaderboardList">Загрузка...</div>
@@ -123,7 +72,6 @@
 <script src="common.js"></script>
 <script src="xp.js"></script>
 <script>
-    // Имя игры для таблицы лидеров (опционально)
     window.GAME_NAME = 'blackjack';
 </script>
 <script src="leaderboard.js"></script>
