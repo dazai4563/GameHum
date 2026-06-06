@@ -17,7 +17,8 @@ const sectors = [
 
 async function updateUI() {
     const mp = await getCurrentMp();
-    document.getElementById('mpValue').innerText = mp;
+    const mpSpan = document.getElementById('mpValue');
+    if (mpSpan) mpSpan.textContent = mp;
     betInput.max = mp;
     if (parseInt(betInput.value) > mp) betInput.value = Math.max(1, mp);
 }
@@ -50,7 +51,7 @@ async function spinWheel() {
     const newMp = currentMp + winAmount;
     await setMp(newMp);
     resultDiv.innerHTML = `<strong>${message}</strong><br>Теперь у вас ${newMp} Mp.`;
-    await updateUI();
+    await updateUI(); // принудительно обновляем UI после установки
     spinBtn.style.transform = 'scale(0.98)';
     setTimeout(() => spinBtn.style.transform = '', 150);
 }

@@ -1,12 +1,8 @@
-// mp.js – единый источник данных
+// mp.js – единый источник данных с автообновлением UI
 const MP_STORAGE_KEY = 'mp_points';
 let currentMpCache = null;
 
 async function loadFromStorage() {
-    if (window.currentUser && window.currentUser.id && window.supabaseClient) {
-        // Здесь код загрузки из Supabase (если нужна синхронизация)
-        // Для локальной версии просто берём из localStorage
-    }
     const mp = localStorage.getItem(MP_STORAGE_KEY);
     currentMpCache = mp ? parseInt(mp) : 100;
     return currentMpCache;
@@ -22,9 +18,14 @@ async function getCurrentMp() {
 async function setMp(value) {
     currentMpCache = value;
     localStorage.setItem(MP_STORAGE_KEY, value);
-    // Обновляем все элементы на странице
-    document.querySelectorAll('#mpValue').forEach(el => el.textContent = value);
-    // Оповещаем об изменении (для игр)
+    // Обновляем все элементы с id="mpValue" на странице
+    const elements = document.querySelectorAll('#mpValue');
+    elements.forEach(el => {
+        el.textContent = value;
+    });
+    // Также обновляем элементы с классом .mp-value (если есть)
+    document.querySelectorAll('.mp-value').forEach(el => el.textContent = value);
+    // Диспатчим событие для дополнительной синхронизации
     window.dispatchEvent(new CustomEvent('mpUpdated', { detail: value }));
 }
 
@@ -49,4 +50,5 @@ window.addMp = addMp;
 window.subtractMp = subtractMp;
 window.displayMp = displayMp;
 
+// Автоматически обновляем UI при загрузке страницы
 document.addEventListener('DOMContentLoaded', () => displayMp());
