@@ -51,12 +51,27 @@
 <script src="common.js"></script>
 <script src="xp.js"></script>
 <script>
-    // Управление модальным окном и кнопками
+    async function linkAccount(email, password, username) {
+        const supabase = window.supabaseClient;
+        const { error: updateError } = await supabase.auth.updateUser({
+            email: email,
+            password: password,
+            data: { username: username }
+        });
+        if (updateError) throw updateError;
+        const { error: upsertError } = await supabase
+            .from('users')
+            .upsert({ id: window.currentUser.id, username: username });
+        if (upsertError) console.warn('Не удалось обновить профиль:', upsertError);
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
         const showLinkBtn = document.getElementById('showLinkBtn');
         const logoutBtn = document.getElementById('logoutBtn');
         const modal = document.getElementById('linkModal');
         const closeModalBtn = document.getElementById('closeModalBtn');
+        const linkBtn = document.getElementById('linkAccountBtn');
+        const linkMessage = document.getElementById('linkMessage');
 
         function updateButtons() {
             if (window.currentUser && !window.currentUser.email) {
@@ -76,6 +91,21 @@
         logoutBtn.onclick = async () => {
             await logout();
             updateButtons();
+        };
+        linkBtn.onclick = async () => {
+            const email = document.getElementById('linkEmail').value;
+            const password = document.getElementById('linkPassword').value;
+            const username = document.getElementById('linkUsername').value;
+            try {
+                await linkAccount(email, password, username);
+                linkMessage.style.color = 'green';
+                linkMessage.textContent = 'Аккаунт привязан! Теперь вы можете войти на другом устройстве.';
+                setTimeout(() => { modal.style.display = 'none'; }, 2000);
+                updateButtons();
+            } catch (err) {
+                linkMessage.style.color = 'red';
+                linkMessage.textContent = err.message;
+            }
         };
 
         setInterval(updateButtons, 1000);
