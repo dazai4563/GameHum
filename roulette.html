@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Колесо удачи – секретная игра</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            background: #050508;
+        }
+        .roulette-container {
+            background: #0a0a10;
+            border: 1px solid #2a2a3a;
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 550px;
+            margin: 30px auto;
+            text-align: center;
+        }
+        .xp-info {
+            background: #111118;
+            padding: 10px;
+            border-radius: 40px;
+            margin-bottom: 20px;
+            color: #ccc;
+        }
+        .bet-area {
+            margin: 20px 0;
+        }
+        .bet-area input {
+            background: #1e1e2a;
+            border: none;
+            color: white;
+            padding: 10px;
+            border-radius: 30px;
+            text-align: center;
+            font-size: 18px;
+            width: 150px;
+        }
+        .wheel-btn {
+            background: linear-gradient(135deg, #4a2a6a, #2a1a4a);
+            border: none;
+            color: white;
+            font-size: 24px;
+            padding: 12px 28px;
+            border-radius: 60px;
+            cursor: pointer;
+            transition: 0.2s;
+            margin-top: 10px;
+        }
+        .wheel-btn:hover {
+            transform: scale(1.02);
+            background: linear-gradient(135deg, #6a4a9a, #4a2a6a);
+        }
+        .result {
+            margin: 20px 0;
+            font-size: 18px;
+            background: #111118;
+            padding: 12px;
+            border-radius: 30px;
+        }
+        .sectors {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 8px;
+            margin: 15px 0;
+            font-size: 12px;
+        }
+        .sector {
+            background: #1a1a24;
+            padding: 4px 8px;
+            border-radius: 20px;
+            color: #aaa;
+        }
+        .back-link {
+            display: inline-block;
+            margin-top: 20px;
+            color: #cc99ff;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+<div class="roulette-container">
+    <h1>🎡 Колесо удачи</h1>
+    <div class="xp-info">
+        <span>🌙 Ваш XP: <strong id="xpValueRoulette">0</strong></span>
+    </div>
+    <div class="bet-area">
+        <label>Ставка XP: </label>
+        <input type="number" id="betAmount" min="1" value="10" step="1">
+        <button id="maxBetBtn" style="background:#2a2a3a; border:none; color:white; padding:8px 16px; border-radius:30px; margin-left:10px;">Макс</button>
+    </div>
+    <button id="spinBtn" class="wheel-btn">🌀 Крутить колесо 🌀</button>
+    <div id="resultMsg" class="result">⚡ Нажмите «Крутить», чтобы сделать ставку ⚡</div>
+    <div class="sectors">
+        <span class="sector">❌ -100%</span>
+        <span class="sector">❌ -100%</span>
+        <span class="sector">🎁 +50%</span>
+        <span class="sector">🎁 +100%</span>
+        <span class="sector">🎁 +150%</span>
+        <span class="sector">🔁 возврат</span>
+        <span class="sector">❌ -100%</span>
+        <span class="sector">🎁 +200%</span>
+    </div>
+    <a href="secret.html" class="back-link">← Вернуться в секретное меню</a>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
+<script src="common.js"></script>
+<script src="xp.js"></script>
+<script src="roulette.js"></script>
+</body>
+</html>
