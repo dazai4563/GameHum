@@ -1,19 +1,24 @@
-// blackjack.js – игра Блэкджек на XP
+// blackjack.js – Блэкджек на XP (ставка, игра, возврат к ставкам)
 
+// ========== Глобальные переменные ==========
 let deck = [];
 let playerHand = [];
 let dealerHand = [];
-let gameActive = false;
+let gameActive = false;      // идёт ли активная игра (разрешены hit/stand)
+let bettingPhase = true;     // режим выбора ставки
 let currentBet = 0;
 let currentUserXP = 0;
 
-// DOM элементы
+// ========== DOM элементы ==========
+const bettingMenu = document.getElementById('bettingMenu');
+const gameArea = document.getElementById('gameArea');
 const betInput = document.getElementById('betAmount');
 const setMaxBetBtn = document.getElementById('setMaxBetBtn');
-const dealBtn = document.getElementById('dealBtn');
+const confirmBetBtn = document.getElementById('confirmBetBtn');
 const hitBtn = document.getElementById('hitBtn');
 const standBtn = document.getElementById('standBtn');
-const newRoundBtn = document.getElementById('newRoundBtn');
+const exitToBetBtn = document.getElementById('exitToBetBtn');
+const newRoundBtnContainer = document.getElementById('newRoundBtnContainer');
 const gameResultDiv = document.getElementById('gameResult');
 const dealerCardsDiv = document.getElementById('dealerCards');
 const playerCardsDiv = document.getElementById('playerCards');
@@ -21,7 +26,7 @@ const dealerScoreSpan = document.getElementById('dealerScore');
 const playerScoreSpan = document.getElementById('playerScore');
 const currentXPDisplaySpan = document.getElementById('currentXPDisplay');
 
-// === Инициализация колоды ===
+// ========== Вспомогательные функции карт ==========
 function createDeck() {
     const suits = ['♠', '♥', '♣', '♦'];
     const values = ['2','3','4','5','6','7','8','9','10','J','Q','K','A'];
@@ -31,7 +36,7 @@ function createDeck() {
             newDeck.push({ suit, value });
         }
     }
-    // Перемешиваем
+    // Перемешивание (Fisher-Yates)
     for (let i = newDeck.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [newDeck[i], newDeck[j]] = [newDeck[j], newDeck[i]];
@@ -39,7 +44,6 @@ function createDeck() {
     return newDeck;
 }
 
-// Подсчёт очков руки
 function calculateScore(hand) {
     let score = 0;
     let aces = 0;
@@ -60,7 +64,6 @@ function calculateScore(hand) {
     return score;
 }
 
-// Отображение карты
 function getCardHTML(card, hidden = false) {
     if (hidden) {
         return '<div class="card">?</div>';
@@ -69,20 +72,25 @@ function getCardHTML(card, hidden = false) {
     return `<div class="card ${isRed ? 'red' : ''}">${card.value}${card.suit}</div>`;
 }
 
-// Обновить интерфейс
+// Обновление отображения карт и очков
 function updateUI() {
     // Карты игрока
     playerCardsDiv.innerHTML = playerHand.map(c => getCardHTML(c)).join('');
     playerScoreSpan.textContent = calculateScore(playerHand);
     
-    // Карты дилера (если игра активна, показываем первую скрытой)
-    if (gameActive) {
-        // Первая карта дилера скрыта
+    if (gameActive && !bettingPhase) {
+        // Во время игры – первая карта дилера скрыта
         if (dealerHand.length > 0) {
             const dealerHTML = getCardHTML(dealerHand[0], true) + dealerHand.slice(1).map(c => getCardHTML(c)).join('');
             dealerCardsDiv.innerHTML = dealerHTML;
-            // Показываем очки только открытой карты (первая скрыта)
-            const visibleScore = dealerHand.slice(1).reduce((sum, c) => sum + (c.value === 'A' ? 11 : (['K','Q','J'].includes(c.value) ? 10 : parseInt(c.value))), 0);
+            // Считаем очки только открытых карт (все, кроме первой)
+            let visibleScore = 0;
+            for (let i = 1; i < dealerHand.length; i++) {
+                const c = dealerHand[i];
+                if (c.value === 'A') visibleScore += 11;
+                else if (['K','Q','J'].includes(c.value)) visibleScore += 10;
+                else visibleScore += parseInt(c.value);
+            }
             dealerScoreSpan.textContent = `? + ${visibleScore}`;
         }
     } else {
@@ -91,20 +99,40 @@ function updateUI() {
     }
 }
 
-// Обновить отображение XP пользователя
+// ========== Управление XP ==========
 async function refreshUserXP() {
     if (typeof getCurrentXP === 'function') {
         currentUserXP = await getCurrentXP();
         currentXPDisplaySpan.textContent = currentUserXP;
         betInput.max = currentUserXP;
-        if (betInput.value > currentUserXP) betInput.value = Math.max(1, currentUserXP);
+        if (parseInt(betInput.value) > currentUserXP) betInput.value = Math.max(1, currentUserXP);
     }
 }
 
-// Закончить раунд с результатом
+// ========== Переключение между режимами ==========
+function showBettingMode() {
+    bettingPhase = true;
+    gameActive = false;
+    bettingMenu.style.display = 'block';
+    gameArea.style.display = 'none';
+    newRoundBtnContainer.innerHTML = '';
+    // Сброс карт
+    playerHand = [];
+    dealerHand = [];
+    updateUI();
+    gameResultDiv.innerHTML = '';
+}
+
+function showGameMode() {
+    bettingPhase = false;
+    bettingMenu.style.display = 'none';
+    gameArea.style.display = 'block';
+    newRoundBtnContainer.innerHTML = '';
+}
+
+// ========== Завершение раунда ==========
 async function endRound(result, message, xpChange) {
     gameActive = false;
-    // Обновляем XP
     if (xpChange !== 0) {
         if (xpChange > 0) {
             await addXP(xpChange);
@@ -116,17 +144,28 @@ async function endRound(result, message, xpChange) {
     // Показываем полные карты дилера
     updateUI();
     gameResultDiv.innerHTML = message;
-    dealBtn.disabled = false;
     hitBtn.disabled = true;
     standBtn.disabled = true;
-    newRoundBtn.disabled = false;
-    // Сохраняем рекорд (победа – 1 очко в таблицу лидеров)
+    // Кнопки после игры
+    newRoundBtnContainer.innerHTML = `
+        <button id="newRoundFromGameBtn" class="action-btn">🔄 Сыграть ещё</button>
+        <button id="exitAfterGameBtn" class="exit-btn">🚪 Выйти в меню ставок</button>
+    `;
+    document.getElementById('newRoundFromGameBtn').addEventListener('click', () => startNewRoundAfterGame());
+    document.getElementById('exitAfterGameBtn').addEventListener('click', () => showBettingMode());
+    
+    // Сохраняем рекорд (1 очко за победу) в таблицу лидеров
     if (result === 'win' && window.currentUser && typeof saveScoreToLeaderboard === 'function') {
         await saveScoreToLeaderboard(1);
     }
 }
 
-// Ход дилера
+async function startNewRoundAfterGame() {
+    newRoundBtnContainer.innerHTML = '';
+    await startGame(); // раздача заново с той же ставкой
+}
+
+// ========== Ход дилера ==========
 async function dealerTurn() {
     let dealerScore = calculateScore(dealerHand);
     while (dealerScore < 17) {
@@ -136,7 +175,6 @@ async function dealerTurn() {
     updateUI();
     const playerScore = calculateScore(playerHand);
     if (dealerScore > 21) {
-        // Дилер перебрал – выигрыш игрока
         await endRound('win', `Дилер перебрал! Вы выиграли ${currentBet} XP!`, currentBet);
     } else if (dealerScore > playerScore) {
         await endRound('lose', `Дилер набрал ${dealerScore}. Вы проиграли ${currentBet} XP.`, -currentBet);
@@ -147,7 +185,7 @@ async function dealerTurn() {
     }
 }
 
-// Начать игру (раздача)
+// ========== Основные игровые действия ==========
 async function startGame() {
     if (gameActive) return;
     const bet = parseInt(betInput.value);
@@ -161,50 +199,39 @@ async function startGame() {
     }
     currentBet = bet;
     
-    // Списываем ставку сразу? Нет, мы спишем в случае проигрыша. Но для целостности можно заблокировать сумму на время игры.
-    // Лучше проверим ещё раз перед ходом дилера.
-    
     deck = createDeck();
     playerHand = [deck.pop(), deck.pop()];
     dealerHand = [deck.pop(), deck.pop()];
     gameActive = true;
     
     updateUI();
-    dealBtn.disabled = true;
     hitBtn.disabled = false;
     standBtn.disabled = false;
-    newRoundBtn.disabled = true;
     gameResultDiv.innerHTML = 'Игра началась. Ваш ход.';
     
     const playerScore = calculateScore(playerHand);
     if (playerScore === 21) {
-        // Блэкджек у игрока (автоматическая победа, если у дилера не тоже 21)
         const dealerScore = calculateScore(dealerHand);
         if (dealerScore === 21) {
             await endRound('push', 'У обоих блэкджек! Ничья.', 0);
         } else {
-            // Блэкджек – выигрыш 1.5? Упростим: удвоенная ставка (как обычный выигрыш)
             await endRound('win', `Блэкджек! Вы выиграли ${currentBet} XP!`, currentBet);
         }
     }
 }
 
-// Взять карту
 async function hit() {
     if (!gameActive) return;
     playerHand.push(deck.pop());
     updateUI();
     const playerScore = calculateScore(playerHand);
     if (playerScore > 21) {
-        // Перебор
         await endRound('lose', `Перебор! Вы проиграли ${currentBet} XP.`, -currentBet);
     } else if (playerScore === 21) {
-        // Автоматическая остановка
         await stand();
     }
 }
 
-// Остановиться
 async function stand() {
     if (!gameActive) return;
     hitBtn.disabled = true;
@@ -212,53 +239,41 @@ async function stand() {
     await dealerTurn();
 }
 
-// Новый раунд (сброс без новой ставки)
-function newRound() {
-    gameActive = false;
-    playerHand = [];
-    dealerHand = [];
-    updateUI();
-    gameResultDiv.innerHTML = '';
-    dealBtn.disabled = false;
-    hitBtn.disabled = true;
-    standBtn.disabled = true;
-    newRoundBtn.disabled = true;
-    // Очистка карт
-    playerCardsDiv.innerHTML = '';
-    dealerCardsDiv.innerHTML = '';
-    dealerScoreSpan.textContent = '0';
-    playerScoreSpan.textContent = '0';
-}
-
-// Установить максимальную ставку
+// ========== Управление ставкой ==========
 async function setMaxBet() {
     await refreshUserXP();
     betInput.value = currentUserXP;
 }
 
-// Обновлять XP при изменении пользователя (выход/вход)
-async function onAuthChange() {
-    await refreshUserXP();
-    if (!window.currentUser) {
-        // Если вышел – сброс игры
-        newRound();
+async function confirmBet() {
+    const bet = parseInt(betInput.value);
+    if (isNaN(bet) || bet < 1) {
+        gameResultDiv.innerHTML = 'Введите корректную ставку (≥1)';
+        return;
     }
+    if (bet > currentUserXP) {
+        gameResultDiv.innerHTML = `Недостаточно XP. Доступно: ${currentUserXP}`;
+        return;
+    }
+    currentBet = bet;
+    showGameMode();
+    await startGame();
 }
 
-// Подписка на изменение авторизации (можно использовать простой setTimeout, но лучше через событие)
-// Просто перевызовем refreshUserXP при загрузке страницы и после каждого действия, изменяющего XP.
-
+// ========== Инициализация ==========
 document.addEventListener('DOMContentLoaded', async () => {
     await refreshUserXP();
-    // Обработчики
-    dealBtn.addEventListener('click', startGame);
+    showBettingMode();
+    
+    confirmBetBtn.addEventListener('click', confirmBet);
+    setMaxBetBtn.addEventListener('click', setMaxBet);
     hitBtn.addEventListener('click', hit);
     standBtn.addEventListener('click', stand);
-    newRoundBtn.addEventListener('click', newRound);
-    setMaxBetBtn.addEventListener('click', setMaxBet);
-    // При изменении XP извне (например, после выхода) обновляем
+    exitToBetBtn.addEventListener('click', () => showBettingMode());
+    
+    // Обновляем XP при изменении в другой вкладке
     window.addEventListener('storage', refreshUserXP);
 });
 
-// Также обновляем XP каждые несколько секунд (на случай, если XP изменится в другой вкладке)
+// Периодическое обновление XP (на случай, если XP изменился через другие игры)
 setInterval(refreshUserXP, 3000);

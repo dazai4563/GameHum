@@ -318,3 +318,58 @@ button:hover {
 .reset-btn:hover {
     background: #e08844;
 }
+/* Кнопка выхода – стилизованная */
+#logoutBtn {
+    background: linear-gradient(135deg, #ff6b6b, #c0392b);
+    border: none;
+    color: white;
+    padding: 6px 18px;
+    border-radius: 40px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+}
+
+#logoutBtn:hover {
+    background: linear-gradient(135deg, #ff5252, #a93226);
+    transform: scale(1.03);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+}
+
+#logoutBtn:active {
+    transform: scale(0.98);
+}
+
+/* Общие кнопки действий */
+.action-btn {
+    background: #4c9aff;
+    border: none;
+    color: white;
+    padding: 10px 24px;
+    border-radius: 40px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.2s;
+    margin: 0 5px;
+}
+
+.action-btn:hover {
+    background: #2a7fcc;
+    transform: scale(1.02);
+}
+
+.exit-btn {
+    background: #ffaa66;
+}
+
+.exit-btn:hover {
+    background: #e08844;
+}
+
+#newRoundBtnContainer {
+    margin-top: 15px;
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+}
