@@ -1,22 +1,21 @@
-// xp.js – управление очками опыта (локально для гостей, в БД для авторизованных)
+// xp.js – управление опытом (гость / авторизованный)
 const XP_STORAGE_KEY = 'guest_xp';
 
 async function getCurrentXP() {
     if (window.currentUser) {
-        // Зарегистрированный пользователь – загружаем из Supabase
         const supabase = window.supabaseClient;
+        // Используем maybeSingle() вместо single() – не выдаёт ошибку 406 при отсутствии записи
         const { data, error } = await supabase
             .from('user_xp')
             .select('xp')
             .eq('user_id', window.currentUser.id)
-            .single();
-        if (error && error.code !== 'PGRST116') { // PGRST116 = not found
+            .maybeSingle();
+        if (error) {
             console.error('Ошибка загрузки XP:', error);
             return 0;
         }
         return data?.xp ?? 0;
     } else {
-        // Гость – читаем из localStorage
         const xp = localStorage.getItem(XP_STORAGE_KEY);
         return xp ? parseInt(xp, 10) : 0;
     }
@@ -44,10 +43,9 @@ async function addXP(amount) {
 
 async function subtractXP(amount) {
     const current = await getCurrentXP();
-    await setXP(Math.max(0, current - amount)); // не ниже нуля
+    await setXP(Math.max(0, current - amount));
 }
 
-// Функция для отображения XP в интерфейсе (вызывать после загрузки DOM)
 async function displayXP() {
     const xpSpan = document.getElementById('xpValue');
     if (xpSpan) {
