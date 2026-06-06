@@ -106,7 +106,6 @@ async function refreshUserXP() {
 }
 
 function showBettingMode() {
-    if (bettingPhase) return;
     bettingPhase = true;
     gameActive = false;
     if (bettingMenu) bettingMenu.style.display = 'block';
@@ -114,7 +113,7 @@ function showBettingMode() {
     if (newRoundBtnContainer) newRoundBtnContainer.innerHTML = '';
     playerHand = [];
     dealerHand = [];
-    updateUI();
+    if (updateUI) updateUI();
     if (gameResultDiv) gameResultDiv.innerHTML = '';
 }
 
