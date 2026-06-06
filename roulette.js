@@ -1,4 +1,3 @@
-// roulette.js – исправленный
 const spinBtn = document.getElementById('spinBtn');
 const betInput = document.getElementById('betAmount');
 const maxBetBtn = document.getElementById('maxBetBtn');
@@ -50,8 +49,8 @@ async function spinWheel() {
     }
     const newMp = currentMp + winAmount;
     await setMp(newMp);
+    await updateUI();
     resultDiv.innerHTML = `<strong>${message}</strong><br>Теперь у вас ${newMp} Mp.`;
-    await updateUI(); // принудительно обновляем UI после установки
     spinBtn.style.transform = 'scale(0.98)';
     setTimeout(() => spinBtn.style.transform = '', 150);
 }
@@ -62,3 +61,4 @@ maxBetBtn.addEventListener('click', async () => {
 });
 spinBtn.addEventListener('click', spinWheel);
 updateUI();
+window.addEventListener('mpUpdated', () => updateUI());
