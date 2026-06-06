@@ -1,40 +1,30 @@
-// common.js – используется на всех страницах, где нужны данные о пользователе
-
-// Текущий пользователь (глобальная переменная)
+// common.js
 window.currentUser = null;
 
-// Проверка сессии при загрузке страницы
 async function checkAuth() {
     const { data: { user }, error } = await window.supabaseClient.auth.getUser();
-    if (error || !user) {
-        window.currentUser = null;
-    } else {
-        window.currentUser = user;
-    }
-    // Если на странице есть элемент для отображения статуса, обновляем его
+    window.currentUser = error ? null : user;
+    
+    // Обновляем отображение имени пользователя
     const userSpan = document.getElementById('currentUser');
     if (userSpan) {
         if (window.currentUser) {
-            const username = window.currentUser.user_metadata?.username || window.currentUser.email.split('@')[0];
+            const username = window.currentUser.user_metadata?.username || 
+                             window.currentUser.email?.split('@')[0] || 'Игрок';
             userSpan.textContent = `👤 ${username}`;
         } else {
             userSpan.textContent = '👤 Гость';
         }
     }
+    return window.currentUser;
 }
 
-// Выход из системы
 async function logout() {
     await window.supabaseClient.auth.signOut();
     window.currentUser = null;
-    window.location.reload(); // или перенаправить на главную
+    await checkAuth(); // обновим интерфейс
 }
 
-// Добавляем обработчик для кнопки выхода, если она есть
 document.addEventListener('DOMContentLoaded', () => {
-    const logoutBtn = document.getElementById('logoutBtn');
-    if (logoutBtn) {
-        logoutBtn.addEventListener('click', logout);
-    }
     checkAuth();
 });

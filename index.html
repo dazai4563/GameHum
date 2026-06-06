@@ -6,50 +6,62 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="container">
-        <h1>🎮 Игровая платформа</h1>
-        <div class="user-status">
-            <div class="user-status">
-                <span id="currentUser"></span>
-                <span>⭐ XP: <span id="xpValue">0</span></span>
-                <button id="logoutBtn" style="display: none;">Выйти</button>
-                <a href="login.html?redirect=index.html" id="loginLink">Войти</a>
-            </div>
-            <span id="currentUser"></span>
-            <button id="logoutBtn" style="display: none;">Выйти</button>
+<div class="container">
+    <h1>🎮 Игровая платформа</h1>
+    <div class="user-status">
+        <span id="currentUser"></span>
+        <span>⭐ XP: <span id="xpValue">0</span></span>
+        <!-- Единая точка входа/выхода -->
+        <span id="authSection">
             <a href="login.html?redirect=index.html" id="loginLink">Войти</a>
+            <button id="logoutBtn" style="display: none;">Выйти</button>
+        </span>
+    </div>
+    <div class="game-menu">
+        <div class="game-card">
+            <h2>🐍 Змейка</h2>
+            <p>Классическая игра. Управляй стрелками.</p>
+            <a href="snake.html" class="btn">Играть</a>
         </div>
-        <div class="game-menu">
-            <div class="game-card">
-                <h2>✊ Камень, ножницы, бумага ✋</h2>
-                <p>Игра против компьютера. Счёт до 3 побед.</p>
-                <a href="rps.html" class="btn">Играть</a>
-            </div>
-            <div class="game-card">
-                <h2>🐍 Змейка</h2>
-                <p>Классическая игра. Управляй стрелками.</p>
-                <a href="snake.html" class="btn">Играть</a>
-            </div>
-            <!-- здесь можно добавить другие игры -->
+        <div class="game-card">
+            <h2>✊ Камень, ножницы, бумага ✋</h2>
+            <p>Игра против компьютера. Счёт до 3 побед.</p>
+            <a href="rps.html" class="btn">Играть</a>
         </div>
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="config.js"></script>
-    <script src="common.js"></script>
-    <script src="xp.js"></script>
-    <script>
-        // Показываем кнопку выхода, если пользователь залогинен
-        document.addEventListener('DOMContentLoaded', () => {
-            const logoutBtn = document.getElementById('logoutBtn');
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
+<script src="common.js"></script>
+<script src="xp.js"></script>
+<script>
+    // Дополнительное обновление интерфейса
+    document.addEventListener('DOMContentLoaded', async () => {
+        // Функция обновления видимости кнопок входа/выхода
+        function updateAuthButtons() {
             const loginLink = document.getElementById('loginLink');
+            const logoutBtn = document.getElementById('logoutBtn');
             if (window.currentUser) {
-                logoutBtn.style.display = 'inline-block';
                 loginLink.style.display = 'none';
+                logoutBtn.style.display = 'inline-block';
             } else {
-                logoutBtn.style.display = 'none';
                 loginLink.style.display = 'inline-block';
+                logoutBtn.style.display = 'none';
             }
-        });
-    </script>
+        }
+        await updateAuthButtons();
+        if (typeof displayXP === 'function') await displayXP();
+
+        // Обработчик выхода
+        const logoutBtn = document.getElementById('logoutBtn');
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', async () => {
+                await logout(); // функция из common.js
+                await updateAuthButtons();
+                if (typeof displayXP === 'function') await displayXP();
+            });
+        }
+    });
+</script>
 </body>
 </html>
