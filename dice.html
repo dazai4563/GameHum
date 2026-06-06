@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>🎲 Кости (сумма)</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body { background: #050508; }
+        .game-container {
+            background: #0a0a10;
+            border: 1px solid #2a2a3a;
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 500px;
+            margin: 50px auto;
+            text-align: center;
+        }
+        h1 { color: #aa66ff; }
+        .mp-display { background: #111118; padding: 10px; border-radius: 40px; margin-bottom: 20px; color: #ffcc88; }
+        .dice-area { display: flex; justify-content: center; gap: 30px; margin: 30px 0; }
+        .die { background: #1e1e2a; width: 80px; height: 80px; border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 48px; box-shadow: 0 0 10px rgba(0,0,0,0.5); }
+        .bet-area { margin: 20px 0; }
+        .bet-area input { background: #1e1e2a; border: none; color: white; padding: 10px; border-radius: 30px; text-align: center; width: 120px; }
+        button { background: linear-gradient(135deg, #4a2a6a, #2a1a4a); border: none; color: white; font-size: 18px; padding: 12px 25px; border-radius: 40px; cursor: pointer; margin: 10px; }
+        .result { background: #111118; padding: 12px; border-radius: 30px; margin: 20px 0; }
+        .multipliers { font-size: 12px; color: #aaa; margin-top: 15px; }
+        .back-btn { background: #2a2a3a; display: inline-block; margin-top: 20px; padding: 8px 16px; border-radius: 30px; text-decoration: none; color: #ccc; }
+    </style>
+</head>
+<body>
+<div class="game-container">
+    <h1>🎲 Кости (сумма)</h1>
+    <div class="mp-display">🌙 Mp: <strong id="mpValue">0</strong></div>
+    <div class="dice-area">
+        <div class="die" id="die1">⚀</div>
+        <div class="die" id="die2">⚀</div>
+    </div>
+    <div class="bet-area">
+        <label>Ставка (Mp): </label>
+        <input type="number" id="betAmount" min="1" value="10" step="1">
+        <button id="maxBetBtn">Макс</button>
+    </div>
+    <div>
+        <label>Ставка на сумму: </label>
+        <input type="number" id="sumBet" min="2" max="12" value="7" step="1">
+    </div>
+    <button id="rollBtn">🎲 Бросить кости 🎲</button>
+    <div id="resultMsg" class="result">⚡ Выберите сумму и сделайте ставку</div>
+    <div class="multipliers">
+        Множители: 2,3→x6 | 4,11→x5 | 5,10→x4 | 6,9→x3 | 7→x2
+    </div>
+    <a href="secret.html" class="back-btn">← Назад в секретное меню</a>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
+<script src="common.js"></script>
+<script src="mp.js"></script>
+<script src="dice.js"></script>
+</body>
+</html>
