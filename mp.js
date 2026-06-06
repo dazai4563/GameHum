@@ -1,4 +1,4 @@
-// mp.js – с автообновлением UI
+// mp.js – лунные очки (Mp)
 const MP_STORAGE_KEY = 'mp_points';
 let currentMpCache = null;
 
@@ -16,7 +16,7 @@ async function getCurrentMp() {
 async function setMp(value) {
     currentMpCache = value;
     localStorage.setItem(MP_STORAGE_KEY, value);
-    // Обновляем все элементы на странице
+    // Обновляем все элементы с id="mpValue"
     document.querySelectorAll('#mpValue').forEach(el => el.textContent = value);
     window.dispatchEvent(new CustomEvent('mpUpdated', { detail: value }));
 }

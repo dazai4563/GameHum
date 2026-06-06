@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>🎡 Колесо удачи </title>
+    <title>🎡 Колесо удачи (секрет)</title>
     <link rel="stylesheet" href="style.css">
     <style>
         body {
@@ -20,7 +20,7 @@
         h1 {
             color: #aa66ff;
         }
-        .moon-display {
+        .mp-display {
             background: #111118;
             padding: 10px;
             border-radius: 40px;
@@ -92,12 +92,12 @@
 </head>
 <body>
 <div class="roulette-container">
-    <h1>🎡 Колесо удачи </h1>
-    <div class="moon-display">
-        🌙 Mp: <strong id="moonValue">0</strong>
+    <h1>🎡 Колесо удачи (луны)</h1>
+    <div class="mp-display">
+        🌙 Mp: <strong id="mpValue">0</strong>
     </div>
     <div class="bet-area">
-        <label>Ставка (🌙): </label>
+        <label>Ставка (Mp): </label>
         <input type="number" id="betAmount" min="1" value="10" step="1">
         <button id="maxBetBtn" style="background:#2a2a3a; border:none; color:white; padding:8px 16px; border-radius:30px; margin-left:10px;">Макс</button>
     </div>
@@ -106,7 +106,7 @@
     <div class="sectors">
         <span class="sector">❌ -100%</span>
         <span class="sector">❌ -100%</span>
-        <span class="sector">❌ -100%</span>
+        <span class="sector">🎁 +50%</span>
         <span class="sector">🎁 +100%</span>
         <span class="sector">🎁 +150%</span>
         <span class="sector">🔁 возврат</span>
