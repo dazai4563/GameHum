@@ -16,7 +16,7 @@ const symbols = [
     { emoji: '🔔', name: 'колокольчик', multiplier: 7, weight: 10 },
     { emoji: '7️⃣', name: 'семёрка', multiplier: 10, weight: 8 },
     { emoji: '❤️', name: 'черви', multiplier: 2, weight: 15 },
-    { emoji: '💯', name: '100', multiplier: 10, weight: 2 }   // редкий джекпот
+    { emoji: '💯', name: '100', multiplier: 30, weight: 2 }   // редкий джекпот
 ];
 
 let currentMp = 0;
@@ -61,10 +61,10 @@ function getRandomSymbol() {
 function calculateWin(sym1, sym2, sym3, bet) {
     // Джекпот: три 💯
     if (sym1.emoji === '💯' && sym2.emoji === '💯' && sym3.emoji === '💯') {
-        const win = bet * 10;
+        const win = bet * 30;
         // Уведомление о джекпоте
         setTimeout(() => alert(`🎉 ДЖЕКПОТ! 🎉\nВыпали три 💯! Вы выиграли ${win} Mp!`), 100);
-        return { win, message: `💯💯💯 ДЖЕКПОТ! x10! Выигрыш: ${win} Mp 💯💯💯` };
+        return { win, message: `💯💯💯 ДЖЕКПОТ! x30! Выигрыш: ${win} Mp 💯💯💯` };
     }
     // Три одинаковых обычных символа
     if (sym1.emoji === sym2.emoji && sym2.emoji === sym3.emoji) {
