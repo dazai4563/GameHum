@@ -46,6 +46,39 @@ async function logout() {
     window.location.reload();
 }
 
+// common.js – добавить в конец файла
+
+// Смена имени пользователя (для анонимных и залогиненных)
+async function changeUsername(newName) {
+    if (!window.currentUser) {
+        throw new Error('Пользователь не авторизован');
+    }
+    if (!newName || newName.trim() === '') {
+        throw new Error('Имя не может быть пустым');
+    }
+    const supabase = window.supabaseClient;
+    // 1. Обновляем метаданные в auth.users
+    const { error: updateError } = await supabase.auth.updateUser({
+        data: { username: newName.trim() }
+    });
+    if (updateError) throw updateError;
+
+    // 2. Обновляем (или создаём) запись в таблице users (если она существует)
+    const { error: upsertError } = await supabase
+        .from('users')
+        .upsert({ id: window.currentUser.id, username: newName.trim() });
+    if (upsertError) console.warn('Не удалось обновить таблицу users:', upsertError);
+
+    // 3. Обновляем глобальную переменную и интерфейс
+    window.currentUser.user_metadata.username = newName.trim();
+    const userSpan = document.getElementById('currentUser');
+    if (userSpan) userSpan.textContent = `👤 ${newName.trim()}`;
+    
+    // 4. Опционально: обновить уже сохранённые рекорды в game_scores? 
+    //    Это сложно и не обязательно, будущие рекорды будут с новым именем.
+    return true;
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
     await checkAuth();
     // Обновляем имя пользователя в интерфейсе

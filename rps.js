@@ -1,8 +1,6 @@
-// rps.js – логика игры "Камень, ножницы, бумага"
 let playerScore = 0;
 let computerScore = 0;
-let gameActive = true; // игра активна, пока никто не набрал 3 очка
-
+let gameActive = true;
 const playerScoreSpan = document.getElementById('playerScore');
 const computerScoreSpan = document.getElementById('computerScore');
 const resultDiv = document.getElementById('result');
@@ -10,14 +8,13 @@ const resetBtn = document.getElementById('resetGameBtn');
 const choiceBtns = document.querySelectorAll('.choice');
 
 function updateScoresUI() {
-    playerScoreSpan.textContent = playerScore;
-    computerScoreSpan.textContent = computerScore;
+    if (playerScoreSpan) playerScoreSpan.textContent = playerScore;
+    if (computerScoreSpan) computerScoreSpan.textContent = computerScore;
 }
 
 function getComputerChoice() {
     const choices = ['rock', 'scissors', 'paper'];
-    const randomIndex = Math.floor(Math.random() * 3);
-    return choices[randomIndex];
+    return choices[Math.floor(Math.random() * 3)];
 }
 
 function getWinner(player, computer) {
@@ -26,9 +23,7 @@ function getWinner(player, computer) {
         (player === 'rock' && computer === 'scissors') ||
         (player === 'scissors' && computer === 'paper') ||
         (player === 'paper' && computer === 'rock')
-    ) {
-        return 'player';
-    }
+    ) return 'player';
     return 'computer';
 }
 
@@ -41,24 +36,19 @@ function getChoiceEmoji(choice) {
     }
 }
 
-// rps.js – дополнения
-async function endGame(winner) {
+function endGame(winner) {
     gameActive = false;
     choiceBtns.forEach(btn => btn.disabled = true);
     if (winner === 'player') {
-        resultDiv.innerHTML = '<span style="color:green;">🎉 Вы выиграли матч! +10 XP 🎉</span>';
-        await addXP(10);   // из xp.js
-        // (опционально) сохраняем рекорд (3 очка) в таблицу лидеров, если нужно
-        if (window.currentUser && typeof saveScoreToLeaderboard === 'function') {
-            saveScoreToLeaderboard(3);
-        } else {
-            resultDiv.innerHTML += '<br><span style="color:orange;">Войдите, чтобы сохранить результат в таблицу лидеров</span>';
-        }
+        if (resultDiv) resultDiv.innerHTML = '<span style="color:green;">🎉 Вы выиграли матч! +10 XP 🎉</span>';
+        if (typeof addXP === 'function') addXP(10);
+        if (window.currentUser && typeof saveScoreToLeaderboard === 'function') saveScoreToLeaderboard(3);
+        else if (resultDiv) resultDiv.innerHTML += '<br><span style="color:orange;">Войдите, чтобы сохранить результат в таблицу лидеров</span>';
     } else {
-        resultDiv.innerHTML = '<span style="color:red;">😢 Компьютер выиграл матч. -5 XP</span>';
-        await subtractXP(5);
+        if (resultDiv) resultDiv.innerHTML = '<span style="color:red;">😢 Компьютер выиграл матч. -5 XP</span>';
+        if (typeof subtractXP === 'function') subtractXP(5);
     }
-    await displayXP(); // обновить отображение
+    if (typeof displayXP === 'function') displayXP();
 }
 
 function resetGame() {
@@ -66,47 +56,29 @@ function resetGame() {
     computerScore = 0;
     gameActive = true;
     updateScoresUI();
-    resultDiv.innerHTML = '';
+    if (resultDiv) resultDiv.innerHTML = '';
     choiceBtns.forEach(btn => btn.disabled = false);
 }
 
 function handlePlayerChoice(playerChoice) {
     if (!gameActive) {
-        resultDiv.innerHTML = 'Игра окончена. Нажмите "Новая игра"';
+        if (resultDiv) resultDiv.innerHTML = 'Игра окончена. Нажмите "Новая игра"';
         return;
     }
-
     const computerChoice = getComputerChoice();
     const winner = getWinner(playerChoice, computerChoice);
-
     let message = `Вы выбрали ${getChoiceEmoji(playerChoice)}. Компьютер выбрал ${getChoiceEmoji(computerChoice)}. `;
-
-    if (winner === 'draw') {
-        message += 'Ничья!';
-    } else if (winner === 'player') {
-        playerScore++;
-        message += 'Вы выиграли этот раунд!';
-    } else {
-        computerScore++;
-        message += 'Компьютер выиграл этот раунд.';
-    }
-
+    if (winner === 'draw') message += 'Ничья!';
+    else if (winner === 'player') { playerScore++; message += 'Вы выиграли этот раунд!'; }
+    else { computerScore++; message += 'Компьютер выиграл этот раунд.'; }
     updateScoresUI();
-    resultDiv.innerHTML = message;
-
-    // Проверка окончания матча
-    if (playerScore >= 3) {
-        endGame('player');
-    } else if (computerScore >= 3) {
-        endGame('computer');
-    }
+    if (resultDiv) resultDiv.innerHTML = message;
+    if (playerScore >= 3) endGame('player');
+    else if (computerScore >= 3) endGame('computer');
 }
 
-// Назначаем обработчики кнопкам
-document.getElementById('rock').addEventListener('click', () => handlePlayerChoice('rock'));
-document.getElementById('scissors').addEventListener('click', () => handlePlayerChoice('scissors'));
-document.getElementById('paper').addEventListener('click', () => handlePlayerChoice('paper'));
-resetBtn.addEventListener('click', resetGame);
-
-// Инициализация счёта и активности
+document.getElementById('rock')?.addEventListener('click', () => handlePlayerChoice('rock'));
+document.getElementById('scissors')?.addEventListener('click', () => handlePlayerChoice('scissors'));
+document.getElementById('paper')?.addEventListener('click', () => handlePlayerChoice('paper'));
+resetBtn?.addEventListener('click', resetGame);
 resetGame();

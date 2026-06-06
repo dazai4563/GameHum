@@ -12,6 +12,7 @@
         <span id="currentUser"></span>
         <span>⭐ XP: <span id="xpValue">0</span></span>
         <span id="authSection">
+            <button id="changeNameBtn" style="display: none;">Сменить имя</button>
             <button id="showLinkBtn" style="display: none;">Привязать аккаунт</button>
             <button id="logoutBtn" style="display: none;">Выйти</button>
         </span>
@@ -46,11 +47,21 @@
     <div id="linkMessage" style="margin-top: 10px;"></div>
 </div>
 
+<!-- Модальное окно для смены имени -->
+<div id="changeNameModal" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #2a2a3a; padding: 20px; border-radius: 16px; z-index: 1001; box-shadow: 0 0 20px black;">
+    <h3>✏️ Сменить имя</h3>
+    <input type="text" id="newNameInput" placeholder="Новое имя" style="display: block; margin: 10px 0; padding: 8px; width: 100%;">
+    <button id="confirmChangeNameBtn">Сохранить</button>
+    <button id="closeChangeNameModalBtn">Отмена</button>
+    <div id="changeNameMessage" style="margin-top: 10px;"></div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="config.js"></script>
 <script src="common.js"></script>
 <script src="xp.js"></script>
 <script>
+    // Привязка аккаунта
     async function linkAccount(email, password, username) {
         const supabase = window.supabaseClient;
         const { error: updateError } = await supabase.auth.updateUser({
@@ -68,20 +79,29 @@
     document.addEventListener('DOMContentLoaded', () => {
         const showLinkBtn = document.getElementById('showLinkBtn');
         const logoutBtn = document.getElementById('logoutBtn');
+        const changeNameBtn = document.getElementById('changeNameBtn');
         const modal = document.getElementById('linkModal');
+        const changeNameModal = document.getElementById('changeNameModal');
         const closeModalBtn = document.getElementById('closeModalBtn');
+        const closeChangeNameModalBtn = document.getElementById('closeChangeNameModalBtn');
         const linkBtn = document.getElementById('linkAccountBtn');
         const linkMessage = document.getElementById('linkMessage');
+        const confirmChangeNameBtn = document.getElementById('confirmChangeNameBtn');
+        const newNameInput = document.getElementById('newNameInput');
+        const changeNameMessage = document.getElementById('changeNameMessage');
 
         function updateButtons() {
             if (window.currentUser && !window.currentUser.email) {
                 showLinkBtn.style.display = 'inline-block';
+                changeNameBtn.style.display = 'inline-block';
                 logoutBtn.style.display = 'inline-block';
             } else if (window.currentUser && window.currentUser.email) {
                 showLinkBtn.style.display = 'none';
+                changeNameBtn.style.display = 'inline-block'; // зарегистрированные тоже могут менять имя
                 logoutBtn.style.display = 'inline-block';
             } else {
                 showLinkBtn.style.display = 'none';
+                changeNameBtn.style.display = 'none';
                 logoutBtn.style.display = 'none';
             }
         }
@@ -105,6 +125,32 @@
             } catch (err) {
                 linkMessage.style.color = 'red';
                 linkMessage.textContent = err.message;
+            }
+        };
+
+        // Смена имени
+        changeNameBtn.onclick = () => {
+            changeNameModal.style.display = 'block';
+            newNameInput.value = window.currentUser?.user_metadata?.username || '';
+            changeNameMessage.textContent = '';
+        };
+        closeChangeNameModalBtn.onclick = () => { changeNameModal.style.display = 'none'; };
+        confirmChangeNameBtn.onclick = async () => {
+            const newName = newNameInput.value.trim();
+            if (!newName) {
+                changeNameMessage.style.color = 'red';
+                changeNameMessage.textContent = 'Имя не может быть пустым';
+                return;
+            }
+            try {
+                await changeUsername(newName);
+                changeNameMessage.style.color = 'green';
+                changeNameMessage.textContent = 'Имя успешно изменено!';
+                setTimeout(() => { changeNameModal.style.display = 'none'; }, 1500);
+                updateButtons();
+            } catch (err) {
+                changeNameMessage.style.color = 'red';
+                changeNameMessage.textContent = err.message;
             }
         };
 

@@ -1,4 +1,4 @@
-// blackjack.js – исправленная версия с проверками
+// blackjack.js – исправленная версия с защитой от отсутствующих элементов
 
 let deck = [];
 let playerHand = [];
@@ -25,11 +25,6 @@ const dealerScoreSpan = document.getElementById('dealerScore');
 const playerScoreSpan = document.getElementById('playerScore');
 const currentXPDisplaySpan = document.getElementById('currentXPDisplay');
 
-// Проверка наличия критических элементов
-if (!bettingMenu || !gameArea) {
-    console.error('Критические элементы не найдены! Проверьте blackjack.html');
-}
-
 function createDeck() {
     const suits = ['♠', '♥', '♣', '♦'];
     const values = ['2','3','4','5','6','7','8','9','10','J','Q','K','A'];
@@ -50,19 +45,11 @@ function calculateScore(hand) {
     let score = 0;
     let aces = 0;
     for (let card of hand) {
-        if (card.value === 'A') {
-            aces++;
-            score += 11;
-        } else if (['K','Q','J'].includes(card.value)) {
-            score += 10;
-        } else {
-            score += parseInt(card.value);
-        }
+        if (card.value === 'A') { aces++; score += 11; }
+        else if (['K','Q','J'].includes(card.value)) score += 10;
+        else score += parseInt(card.value);
     }
-    while (score > 21 && aces > 0) {
-        score -= 10;
-        aces--;
-    }
+    while (score > 21 && aces > 0) { score -= 10; aces--; }
     return score;
 }
 
@@ -75,7 +62,8 @@ function getCardHTML(card, hidden = false) {
 function updateUI() {
     if (playerCardsDiv) playerCardsDiv.innerHTML = playerHand.map(c => getCardHTML(c)).join('');
     if (playerScoreSpan) playerScoreSpan.textContent = calculateScore(playerHand);
-    if (gameActive && !bettingPhase && dealerHand.length > 0) {
+    
+    if (gameActive && !bettingPhase && dealerHand.length) {
         if (dealerCardsDiv) {
             const dealerHTML = getCardHTML(dealerHand[0], true) + dealerHand.slice(1).map(c => getCardHTML(c)).join('');
             dealerCardsDiv.innerHTML = dealerHTML;
@@ -98,10 +86,8 @@ async function refreshUserXP() {
     if (typeof getCurrentXP === 'function') {
         currentUserXP = await getCurrentXP();
         if (currentXPDisplaySpan) currentXPDisplaySpan.textContent = currentUserXP;
-        if (betInput) {
-            betInput.max = currentUserXP;
-            if (parseInt(betInput.value) > currentUserXP) betInput.value = Math.max(1, currentUserXP);
-        }
+        if (betInput) betInput.max = currentUserXP;
+        if (betInput && parseInt(betInput.value) > currentUserXP) betInput.value = Math.max(1, currentUserXP);
     }
 }
 
@@ -113,12 +99,11 @@ function showBettingMode() {
     if (newRoundBtnContainer) newRoundBtnContainer.innerHTML = '';
     playerHand = [];
     dealerHand = [];
-    if (updateUI) updateUI();
+    updateUI();
     if (gameResultDiv) gameResultDiv.innerHTML = '';
 }
 
 function showGameMode() {
-    if (!bettingPhase) return;
     bettingPhase = false;
     if (bettingMenu) bettingMenu.style.display = 'none';
     if (gameArea) gameArea.style.display = 'block';
@@ -164,20 +149,15 @@ async function dealerTurn() {
     }
     updateUI();
     const playerScore = calculateScore(playerHand);
-    if (dealerScore > 21) {
-        await endRound('win', `Дилер перебрал! Вы выиграли ${currentBet} XP!`, currentBet);
-    } else if (dealerScore > playerScore) {
-        await endRound('lose', `Дилер набрал ${dealerScore}. Вы проиграли ${currentBet} XP.`, -currentBet);
-    } else if (dealerScore < playerScore) {
-        await endRound('win', `Вы набрали ${playerScore}. Вы выиграли ${currentBet} XP!`, currentBet);
-    } else {
-        await endRound('push', `Ничья! Ставка возвращена.`, 0);
-    }
+    if (dealerScore > 21) await endRound('win', `Дилер перебрал! Вы выиграли ${currentBet} XP!`, currentBet);
+    else if (dealerScore > playerScore) await endRound('lose', `Дилер набрал ${dealerScore}. Вы проиграли ${currentBet} XP.`, -currentBet);
+    else if (dealerScore < playerScore) await endRound('win', `Вы набрали ${playerScore}. Вы выиграли ${currentBet} XP!`, currentBet);
+    else await endRound('push', `Ничья! Ставка возвращена.`, 0);
 }
 
 async function startGame() {
     if (gameActive) return;
-    const bet = parseInt(betInput.value);
+    const bet = parseInt(betInput ? betInput.value : 0);
     if (isNaN(bet) || bet < 1) {
         if (gameResultDiv) gameResultDiv.innerHTML = 'Ставка должна быть не менее 1 XP';
         return;
@@ -198,11 +178,8 @@ async function startGame() {
     const playerScore = calculateScore(playerHand);
     if (playerScore === 21) {
         const dealerScore = calculateScore(dealerHand);
-        if (dealerScore === 21) {
-            await endRound('push', 'У обоих блэкджек! Ничья.', 0);
-        } else {
-            await endRound('win', `Блэкджек! Вы выиграли ${currentBet} XP!`, currentBet);
-        }
+        if (dealerScore === 21) await endRound('push', 'У обоих блэкджек! Ничья.', 0);
+        else await endRound('win', `Блэкджек! Вы выиграли ${currentBet} XP!`, currentBet);
     }
 }
 
@@ -211,11 +188,8 @@ async function hit() {
     playerHand.push(deck.pop());
     updateUI();
     const playerScore = calculateScore(playerHand);
-    if (playerScore > 21) {
-        await endRound('lose', `Перебор! Вы проиграли ${currentBet} XP.`, -currentBet);
-    } else if (playerScore === 21) {
-        await stand();
-    }
+    if (playerScore > 21) await endRound('lose', `Перебор! Вы проиграли ${currentBet} XP.`, -currentBet);
+    else if (playerScore === 21) await stand();
 }
 
 async function stand() {
@@ -231,7 +205,7 @@ async function setMaxBet() {
 }
 
 async function confirmBet() {
-    const bet = parseInt(betInput.value);
+    const bet = parseInt(betInput ? betInput.value : 0);
     if (isNaN(bet) || bet < 1) {
         if (gameResultDiv) gameResultDiv.innerHTML = 'Введите корректную ставку (≥1)';
         return;
@@ -254,5 +228,5 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (standBtn) standBtn.addEventListener('click', stand);
     if (exitToBetBtn) exitToBetBtn.addEventListener('click', () => showBettingMode());
     window.addEventListener('storage', refreshUserXP);
-    setInterval(refreshUserXP, 3000);
 });
+setInterval(refreshUserXP, 3000);
