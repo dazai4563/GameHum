@@ -6,51 +6,23 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<!-- Секретная кнопка (едва заметная) -->
-<div style="position: fixed; bottom: 15px; right: 15px; z-index: 9999;">
-    <button id="secretToggleBtn" style="
-        background: rgba(30,30,47,0.25);
-        border: none;
-        color: rgba(255,255,255,0.1);
-        font-size: 14px;
-        padding: 6px 12px;
-        border-radius: 30px;
-        cursor: pointer;
-        transition: all 0.2s;
-        font-weight: bold;
-    " onmouseover="this.style.background='rgba(30,30,47,0.5)'; this.style.color='rgba(255,255,255,0.3)';"
-       onmouseout="this.style.background='rgba(30,30,47,0.25)'; this.style.color='rgba(255,255,255,0.1)';">🔓</button>
-</div>
-
-<!-- Секретное меню (тёмное, скрыто по умолчанию) -->
-<div id="secretGameMenu" style="display: none;">
-    <div class="container secret-container">
-        <h1 style="color: #888;">🥷 Секретное меню</h1>
-        <div class="secret-game-menu">
-            <div class="secret-game-card">
-                <h2>🐍 Змейка (секрет)</h2>
-                <p>Та же игра, но в тёмном режиме</p>
-                <a href="snake.html" class="btn secret-btn">Играть</a>
-            </div>
-            <div class="secret-game-card">
-                <h2>✊ Камень, ножницы, бумага</h2>
-                <p>Секретный вариант</p>
-                <a href="rps.html" class="btn secret-btn">Играть</a>
-            </div>
-            <div class="secret-game-card">
-                <h2>🃏 Блэкджек</h2>
-                <p>Тёмный стиль</p>
-                <a href="blackjack.html" class="btn secret-btn">Играть</a>
-            </div>
-            <div class="secret-game-card">
-                <h2>💣 Сапёр</h2>
-                <p>В тёмных тонах</p>
-                <a href="minesweeper.html" class="btn secret-btn">Играть</a>
-            </div>
-        </div>
-        <button id="backToNormalBtn" class="btn back-btn" style="margin-top: 30px;">↺ Вернуться в обычное меню</button>
-    </div>
-</div>
+<!-- Секретная кнопка перехода в секретное меню -->
+<a href="secret.html" id="secretLink" style="
+    position: fixed;
+    bottom: 15px;
+    right: 15px;
+    background: rgba(30,30,47,0.25);
+    border: none;
+    color: rgba(255,255,255,0.1);
+    font-size: 16px;
+    padding: 8px 14px;
+    border-radius: 30px;
+    text-decoration: none;
+    transition: all 0.2s;
+    z-index: 9999;
+    font-weight: bold;
+" onmouseover="this.style.background='rgba(30,30,47,0.6)'; this.style.color='rgba(255,255,255,0.4)';"
+onmouseout="this.style.background='rgba(30,30,47,0.25)'; this.style.color='rgba(255,255,255,0.1)';">🔓</a>
 <div class="container">
     <h1>🎮 Игровая платформа</h1>
     <div class="user-status">
@@ -210,25 +182,6 @@
         setInterval(updateButtons, 1000);
         updateButtons();
     });
-</script>
-<script>
-    const secretBtn = document.getElementById('secretToggleBtn');
-    const normalMenu = document.querySelector('.game-menu'); // обычный блок с играми
-    const secretMenuDiv = document.getElementById('secretGameMenu');
-    const backBtn = document.getElementById('backToNormalBtn');
-
-    function showSecretMenu() {
-        if (normalMenu) normalMenu.style.display = 'none';
-        if (secretMenuDiv) secretMenuDiv.style.display = 'block';
-    }
-
-    function showNormalMenu() {
-        if (normalMenu) normalMenu.style.display = 'flex'; // или 'grid', смотря как у вас
-        if (secretMenuDiv) secretMenuDiv.style.display = 'none';
-    }
-
-    secretBtn.addEventListener('click', showSecretMenu);
-    backBtn.addEventListener('click', showNormalMenu);
 </script>
 </body>
 </html>
