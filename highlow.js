@@ -1,26 +1,26 @@
-// highlow.js
+// highlow.js – игра Выше/Ниже
+const currentNumberSpan = document.getElementById('currentNumber');
+const betInput = document.getElementById('betAmount');
+const maxBetBtn = document.getElementById('maxBetBtn');
 const higherBtn = document.getElementById('higherBtn');
 const lowerBtn = document.getElementById('lowerBtn');
 const equalBtn = document.getElementById('equalBtn');
-const betInput = document.getElementById('betAmount');
-const maxBetBtn = document.getElementById('maxBetBtn');
 const resultDiv = document.getElementById('resultMsg');
-const currentNumberSpan = document.getElementById('currentNumber');
 
-let currentNumber = 5;
+let currentNumber = 5; // стартовое число (1-10)
 
-function generateNewNumber() {
-    return Math.floor(Math.random() * 10) + 1; // 1..10
+function getRandomNumber() {
+    return Math.floor(Math.random() * 10) + 1;
 }
 
-async function updateUI() {
+async function refreshUI() {
     const mp = await getCurrentMp();
     document.getElementById('mpValue').innerText = mp;
     betInput.max = mp;
     if (parseInt(betInput.value) > mp) betInput.value = Math.max(1, mp);
 }
 
-async function play(guess) {
+async function play(choice) {
     const bet = parseInt(betInput.value);
     if (isNaN(bet) || bet < 1) {
         resultDiv.innerText = 'Ставка должна быть ≥1';
@@ -31,28 +31,44 @@ async function play(guess) {
         resultDiv.innerText = `Не хватает Mp (${currentMp})`;
         return;
     }
-    const nextNumber = generateNewNumber();
+    const newNumber = getRandomNumber();
     let winAmount = 0;
-    let message = '';
-    if (guess === 'higher' && nextNumber > currentNumber) {
-        winAmount = bet;
-        message = `⬆️ Было ${currentNumber}, стало ${nextNumber}. Вы выиграли ${winAmount} Mp!`;
-    } else if (guess === 'lower' && nextNumber < currentNumber) {
-        winAmount = bet;
-        message = `⬇️ Было ${currentNumber}, стало ${nextNumber}. Вы выиграли ${winAmount} Mp!`;
-    } else if (guess === 'equal' && nextNumber === currentNumber) {
-        winAmount = bet * 5;
-        message = `🟰 Равно! Было ${currentNumber}, осталось ${nextNumber}. Выигрыш x5: ${winAmount} Mp!`;
-    } else {
-        winAmount = -bet;
-        message = `😢 Не угадали: было ${currentNumber}, стало ${nextNumber}. Проигрыш ${bet} Mp.`;
+    let msg = '';
+    let won = false;
+    if (choice === 'higher') {
+        if (newNumber > currentNumber) {
+            winAmount = bet;
+            won = true;
+            msg = `🎉 ${newNumber} > ${currentNumber}! Вы выиграли ${winAmount} Mp!`;
+        } else {
+            winAmount = -bet;
+            msg = `😢 ${newNumber} не больше ${currentNumber}. Проигрыш ${bet} Mp.`;
+        }
+    } else if (choice === 'lower') {
+        if (newNumber < currentNumber) {
+            winAmount = bet;
+            won = true;
+            msg = `🎉 ${newNumber} < ${currentNumber}! Вы выиграли ${winAmount} Mp!`;
+        } else {
+            winAmount = -bet;
+            msg = `😢 ${newNumber} не меньше ${currentNumber}. Проигрыш ${bet} Mp.`;
+        }
+    } else if (choice === 'equal') {
+        if (newNumber === currentNumber) {
+            winAmount = bet * 5;
+            won = true;
+            msg = `🎉🎉🎉 ${newNumber} = ${currentNumber}! Джекпот! Вы выиграли ${winAmount} Mp!`;
+        } else {
+            winAmount = -bet;
+            msg = `😢 ${newNumber} ≠ ${currentNumber}. Проигрыш ${bet} Mp.`;
+        }
     }
     const newMp = currentMp + winAmount;
     await setMp(newMp);
-    await updateUI();
-    currentNumber = nextNumber;
+    await refreshUI();
+    resultDiv.innerHTML = `<strong>${msg}</strong><br>Баланс: ${newMp} Mp`;
+    currentNumber = newNumber;
     currentNumberSpan.innerText = currentNumber;
-    resultDiv.innerHTML = `<strong>${message}</strong><br>Баланс: ${newMp} Mp`;
 }
 
 higherBtn.addEventListener('click', () => play('higher'));
@@ -62,5 +78,5 @@ maxBetBtn.addEventListener('click', async () => {
     const mp = await getCurrentMp();
     betInput.value = mp;
 });
-updateUI();
-window.addEventListener('mpUpdated', updateUI);
+refreshUI();
+window.addEventListener('mpUpdated', refreshUI);

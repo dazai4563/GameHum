@@ -1,29 +1,44 @@
-// dice.js
-const rollBtn = document.getElementById('rollBtn');
+// dice.js – игра Кости на Mp
+const dice1El = document.getElementById('dice1');
+const dice2El = document.getElementById('dice2');
 const betInput = document.getElementById('betAmount');
 const maxBetBtn = document.getElementById('maxBetBtn');
-const sumInput = document.getElementById('sumBet');
+const rollBtn = document.getElementById('rollBtn');
 const resultDiv = document.getElementById('resultMsg');
-const die1El = document.getElementById('die1');
-const die2El = document.getElementById('die2');
 
-const multipliers = { 2:6, 3:6, 4:5, 5:4, 6:3, 7:2, 8:3, 9:3, 10:4, 11:5, 12:6 };
+let currentBetNumber = null; // выбранное число для ставки (2-12)
+const multipliers = {
+    2: 6, 3: 6, 4: 5, 5: 4, 6: 3, 7: 2,
+    8: 3, 9: 4, 10: 5, 11: 6, 12: 6
+};
 
-function getDieFace(value) {
-    const faces = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
-    return faces[value-1];
-}
+// Подсветка выбранной кнопки
+document.querySelectorAll('.bet-option').forEach(btn => {
+    btn.addEventListener('click', () => {
+        document.querySelectorAll('.bet-option').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentBetNumber = parseInt(btn.dataset.bet);
+    });
+});
 
-async function updateUI() {
+async function refreshUI() {
     const mp = await getCurrentMp();
     document.getElementById('mpValue').innerText = mp;
     betInput.max = mp;
     if (parseInt(betInput.value) > mp) betInput.value = Math.max(1, mp);
 }
 
+function diceFace(value) {
+    const faces = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
+    return faces[value - 1];
+}
+
 async function rollDice() {
+    if (currentBetNumber === null) {
+        resultDiv.innerText = 'Сначала выберите число для ставки!';
+        return;
+    }
     const bet = parseInt(betInput.value);
-    const chosenSum = parseInt(sumInput.value);
     if (isNaN(bet) || bet < 1) {
         resultDiv.innerText = 'Ставка должна быть ≥1';
         return;
@@ -33,43 +48,39 @@ async function rollDice() {
         resultDiv.innerText = `Не хватает Mp (${currentMp})`;
         return;
     }
-    if (isNaN(chosenSum) || chosenSum < 2 || chosenSum > 12) {
-        resultDiv.innerText = 'Выберите сумму от 2 до 12';
-        return;
-    }
-    // Анимация прокрутки
+    // Анимация броска
+    rollBtn.disabled = true;
     let rolls = 0;
     const interval = setInterval(() => {
         const r1 = Math.floor(Math.random() * 6) + 1;
         const r2 = Math.floor(Math.random() * 6) + 1;
-        die1El.innerText = getDieFace(r1);
-        die2El.innerText = getDieFace(r2);
+        dice1El.innerText = diceFace(r1);
+        dice2El.innerText = diceFace(r2);
         rolls++;
         if (rolls >= 10) {
             clearInterval(interval);
             const final1 = Math.floor(Math.random() * 6) + 1;
             const final2 = Math.floor(Math.random() * 6) + 1;
-            die1El.innerText = getDieFace(final1);
-            die2El.innerText = getDieFace(final2);
-            const total = final1 + final2;
+            dice1El.innerText = diceFace(final1);
+            dice2El.innerText = diceFace(final2);
+            const sum = final1 + final2;
+            const multiplier = multipliers[currentBetNumber];
             let winAmount = 0;
-            let message = '';
-            if (total === chosenSum) {
-                const multiplier = multipliers[total];
+            let msg = '';
+            if (sum === currentBetNumber) {
                 winAmount = bet * multiplier;
-                message = `🎉 Выпало ${total}! Множитель x${multiplier}. Выигрыш: ${winAmount} Mp!`;
+                msg = `Выпало ${sum}! Вы выиграли ${winAmount} Mp!`;
             } else {
                 winAmount = -bet;
-                message = `😢 Выпало ${total}, а не ${chosenSum}. Вы проиграли ${bet} Mp.`;
+                msg = `Выпало ${sum}. Ставка не сыграла. Проигрыш ${bet} Mp.`;
             }
             const newMp = currentMp + winAmount;
             await setMp(newMp);
-            await updateUI();
-            resultDiv.innerHTML = `<strong>${message}</strong><br>Баланс: ${newMp} Mp`;
+            await refreshUI();
+            resultDiv.innerHTML = `<strong>${msg}</strong><br>Баланс: ${newMp} Mp`;
             rollBtn.disabled = false;
         }
     }, 80);
-    rollBtn.disabled = true;
 }
 
 maxBetBtn.addEventListener('click', async () => {
@@ -77,5 +88,5 @@ maxBetBtn.addEventListener('click', async () => {
     betInput.value = mp;
 });
 rollBtn.addEventListener('click', rollDice);
-updateUI();
-window.addEventListener('mpUpdated', updateUI);
+refreshUI();
+window.addEventListener('mpUpdated', refreshUI);

@@ -2,10 +2,12 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>⬆️ Выше/Ниже ⬇️</title>
+    <title>📈 Выше / Ниже</title>
     <link rel="stylesheet" href="style.css">
     <style>
-        body { background: #050508; }
+        body {
+            background: #050508;
+        }
         .game-container {
             background: #0a0a10;
             border: 1px solid #2a2a3a;
@@ -15,40 +17,99 @@
             margin: 50px auto;
             text-align: center;
         }
-        h1 { color: #aa66ff; }
-        .mp-display { background: #111118; padding: 10px; border-radius: 40px; margin-bottom: 20px; color: #ffcc88; }
-        .number-display {
-            background: #1e1e2a;
-            font-size: 48px;
+        h1 {
+            color: #dd99ff;
+        }
+        .mp-display {
+            background: #111118;
+            padding: 10px;
+            border-radius: 40px;
+            margin-bottom: 20px;
+            color: #ffcc88;
+            font-size: 1.2rem;
+        }
+        .number-area {
+            font-size: 64px;
             font-weight: bold;
+            background: #1e1e2a;
+            border-radius: 30px;
             padding: 20px;
-            border-radius: 20px;
+            margin: 20px 0;
+            color: #ffaa66;
+        }
+        .bet-area {
             margin: 20px 0;
         }
-        .bet-area { margin: 20px 0; }
-        .bet-area input { background: #1e1e2a; border: none; color: white; padding: 10px; border-radius: 30px; width: 120px; }
-        .buttons { display: flex; justify-content: center; gap: 15px; margin: 20px 0; }
-        button { background: #2a2a3a; border: none; color: white; font-size: 18px; padding: 10px 20px; border-radius: 40px; cursor: pointer; }
-        .result { background: #111118; padding: 12px; border-radius: 30px; margin: 20px 0; }
-        .back-btn { background: #2a2a3a; display: inline-block; margin-top: 20px; padding: 8px 16px; border-radius: 30px; text-decoration: none; color: #ccc; }
+        .bet-area input {
+            background: #1e1e2a;
+            border: none;
+            color: white;
+            padding: 10px;
+            border-radius: 30px;
+            text-align: center;
+            font-size: 18px;
+            width: 150px;
+        }
+        .choice-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .choice-btn {
+            background: #2a2a3a;
+            border: none;
+            color: #ffcc88;
+            padding: 12px 24px;
+            border-radius: 40px;
+            font-size: 20px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .choice-btn:hover {
+            background: #6a4a9a;
+            color: white;
+        }
+        .result {
+            background: #111118;
+            padding: 12px;
+            border-radius: 30px;
+            margin: 20px 0;
+            font-size: 18px;
+            color: #ffaa66;
+        }
+        .back-btn {
+            background: #2a2a3a;
+            color: #ccc;
+            display: inline-block;
+            margin-top: 20px;
+            padding: 8px 16px;
+            border-radius: 30px;
+            text-decoration: none;
+        }
+        .back-btn:hover {
+            background: #3a3a4a;
+        }
     </style>
 </head>
 <body>
 <div class="game-container">
-    <h1>⬆️ Выше / Ниже ⬇️</h1>
-    <div class="mp-display">🌙 Mp: <strong id="mpValue">0</strong></div>
-    <div class="number-display" id="currentNumber">5</div>
+    <h1>📈 Выше / Ниже</h1>
+    <div class="mp-display">
+        🌙 Mp: <strong id="mpValue">0</strong>
+    </div>
+    <div class="number-area" id="currentNumber">5</div>
     <div class="bet-area">
         <label>Ставка (Mp): </label>
         <input type="number" id="betAmount" min="1" value="10" step="1">
-        <button id="maxBetBtn">Макс</button>
+        <button id="maxBetBtn" style="background:#2a2a3a; border:none; color:white; padding:8px 16px; border-radius:30px; margin-left:10px;">Макс</button>
     </div>
-    <div class="buttons">
-        <button id="higherBtn">⬆️ Выше</button>
-        <button id="lowerBtn">⬇️ Ниже</button>
-        <button id="equalBtn">🟰 Равно (x5)</button>
+    <div class="choice-buttons">
+        <button id="higherBtn" class="choice-btn">📈 Выше</button>
+        <button id="lowerBtn" class="choice-btn">📉 Ниже</button>
+        <button id="equalBtn" class="choice-btn">⚖️ Равно (x5)</button>
     </div>
-    <div id="resultMsg" class="result">⚡ Выберите направление</div>
+    <div id="resultMsg" class="result">Нажмите «Выше», «Ниже» или «Равно»</div>
     <a href="secret.html" class="back-btn">← Назад в секретное меню</a>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
