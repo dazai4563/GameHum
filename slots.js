@@ -21,23 +21,14 @@ const symbols = [
 let currentMp = 0;
 
 async function loadMp() {
-    if (typeof getCurrentMp === 'function') {
-        currentMp = await getCurrentMp();
-    } else {
-        let mp = localStorage.getItem('mp_points');
-        currentMp = mp ? parseInt(mp) : 100;
-    }
+    currentMp = await getCurrentMp();
     document.getElementById('mpValue').innerText = currentMp;
     betInput.max = currentMp;
     if (parseInt(betInput.value) > currentMp) betInput.value = Math.max(1, currentMp);
 }
 
 async function saveMp(value) {
-    if (typeof setMp === 'function') {
-        await setMp(value);
-    } else {
-        localStorage.setItem('mp_points', value);
-    }
+    await setMp(value);
     currentMp = value;
     document.getElementById('mpValue').innerText = value;
     betInput.max = value;
@@ -95,13 +86,9 @@ function spinReelWithAnimation(bet) {
             const result = calculateWin(final1, final2, final3, bet);
             let newMp;
             if (result.win > 0) {
-                newMp = currentMp + result.win;
-                saveMp(newMp);
-                resultDiv.innerHTML = `<span style="color:#aaffaa;">${result.message}<br>Новый баланс: ${newMp} Mp</span>`;
+                await saveMp(currentMp + result.win);
             } else {
-                newMp = currentMp - bet;
-                saveMp(newMp);
-                resultDiv.innerHTML = `<span style="color:#ffaaaa;">${result.message}<br>Вы проиграли ${bet} Mp. Баланс: ${newMp} Mp</span>`;
+                await saveMp(currentMp - bet);
             }
             spinBtn.disabled = false;
         }

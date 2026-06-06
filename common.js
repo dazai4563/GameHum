@@ -38,6 +38,19 @@ async function checkAuth() {
     }
 }
 
+// common.js, после checkAuth и установки window.currentUser
+async function syncLocalMpToSupabase() {
+    const localMp = localStorage.getItem('mp_balance_local');
+    if (localMp !== null && window.currentUser) {
+        const mpValue = parseInt(localMp);
+        if (!isNaN(mpValue)) {
+            await setMp(mpValue); // из mp.js
+            localStorage.removeItem('mp_balance_local');
+            console.log('Mp перенесены в облако');
+        }
+    }
+}
+
 async function logout() {
     await window.supabaseClient.auth.signOut();
     await initAnonymousSession(); // создаём новую анонимную сессию
