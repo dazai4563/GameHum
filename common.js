@@ -11,9 +11,9 @@ async function checkAuth() {
         if (window.currentUser) {
             const username = window.currentUser.user_metadata?.username || 
                              window.currentUser.email?.split('@')[0] || 'Игрок';
-            userSpan.textContent = `👤 ${username}`;
+            userSpan.textContent = `${username} 👤`;
         } else {
-            userSpan.textContent = '👤 Гость';
+            userSpan.textContent = 'Гость 👤';
         }
     }
     return window.currentUser;
